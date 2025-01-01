@@ -23,7 +23,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Node.js
-        uses: @v4
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -44,7 +44,7 @@ jobs:
       - name: Build HAP
         run: |
           hvigorw --mode module -p product=default assembleHap --parallel --no-daemon
-          
+
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
