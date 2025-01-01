@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      OHOS_SDK_VERSION: 5.0.1
+      NODE_VERSION: 18
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: @v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup OpenHarmony SDK
+        id: setup-sdk
+        uses: openharmony-rs/setup-ohos-sdk@v0.2
+        with:
+          version: ${{ env.OHOS_SDK_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          npm config set registry=https://repo.huaweicloud.com/repository/npm/
+          npm config set @ohos:registry=https://repo.harmonyos.com/npm/
+          ohpm config set registry https://ohpm.openharmony.cn/ohpm/
+          ohpm config set strict_ssl false
+          ohpm install --all
+
+      - name: Build HAP
+        run: |
+          hvigorw --mode module -p product=default assembleHap --parallel --no-daemon
+          
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
