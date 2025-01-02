@@ -8,11 +8,14 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: ubuntu-24.04
     env:
-      OHOS_SDK_VERSION: 5.0.1
       NODE_VERSION: 18
       JAVA_VERSION: "17"
+      SDK_VERSION_MAJOR: 5.0.5
+      SDK_VERSION_MINOR: 310
+      URL_BASE: "https://repo.huaweicloud.com/openharmony/ohpm"
+      FILE_BASENAME: "commandline-tools-linux-x64"
     strategy:
       fail-fast: false
 
@@ -36,19 +39,36 @@ jobs:
 
       - name: Setup OpenHarmony SDK
         id: setup-sdk
-        uses: openharmony-rs/setup-ohos-sdk@v0.2
-        with:
-          version: ${{ env.OHOS_SDK_VERSION }}
-
-      - name: Install hvigor
         run: |
+          # Prepare path
+          export CMDLINE_TOOL_DIR="${HOME}/setup-sdk"
+          mkdir -p "${CMDLINE_TOOL_DIR}"
+          
+          # Download commandline tools and unzip
+          curl -L -o "${CMDLINE_TOOL_DIR}/${FILE_BASENAME}.zip" "${URL_BASE}/${SDK_VERSION_MAJOR}/${FILE_BASENAME}-${SDK_VERSION_MAJOR}-${SDK_VERSION_MINOR}.zip"
+          unzip "${CMDLINE_TOOL_DIR}/${FILE_BASENAME}.zip" -do "${CMDLINE_TOOL_DIR}"
+          
+          # Setup environment variables
+          export PATH=${CMDLINE_TOOL_DIR}/command-line-tools/bin:$PATH
+          
+          # Setup npm registry
+          npm config set registry https://repo.huaweicloud.com/repository/npm/
           npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
-          npm install "@ohos/hvigor"
-          npm install "@ohos/hvigor-ohos-plugin"
+          
+          # Setup ohpm
+          ohpm -v
+          ohpm config set registry https://ohpm.openharmony.cn/ohpm/
+          ohpm config set strict_ssl false
 
       - name: Build HAP
         run: |
-          node ./node_modules/@ohos/hvigor/bin/hvigor.js --mode module -p product=default assembleHap --parallel --no-daemon
+          # Install dependencies
+          ohpm install --all
+          
+          # Build product
+          hvigorw -v
+          hvigorw clean --no-daemon
+          hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
 
       - name: Upload app
         uses: actions/upload-artifact@v4
