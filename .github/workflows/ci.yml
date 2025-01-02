@@ -12,6 +12,7 @@ jobs:
     env:
       OHOS_SDK_VERSION: 5.0.1
       NODE_VERSION: 18
+      JAVA_VERSION: "17"
     strategy:
       fail-fast: false
 
@@ -27,23 +28,33 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
       - name: Setup OpenHarmony SDK
         id: setup-sdk
         uses: openharmony-rs/setup-ohos-sdk@v0.2
         with:
           version: ${{ env.OHOS_SDK_VERSION }}
 
-      - name: Install dependencies
+      - name: Install hvigor
         run: |
-          npm config set registry=https://repo.huaweicloud.com/repository/npm/
-          npm config set @ohos:registry=https://repo.harmonyos.com/npm/
-          ohpm config set registry https://ohpm.openharmony.cn/ohpm/
-          ohpm config set strict_ssl false
-          ohpm install --all
+          npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
+          npm install "@ohos/hvigor"
+          npm install "@ohos/hvigor-ohos-plugin"
 
       - name: Build HAP
         run: |
-          hvigorw --mode module -p product=default assembleHap --parallel --no-daemon
+          node ./node_modules/@ohos/hvigor/bin/hvigor.js --mode module -p product=default assembleHap --parallel --no-daemon
+
+      - name: Upload app
+        uses: actions/upload-artifact@v4
+        with:
+          name: entry-default-unsigned.hap
+          path: entry/build/default/outputs/default/entry-default-unsigned.hap
 
       - name: Setup tmate session
         if: ${{ failure() }}
