@@ -16,6 +16,7 @@ jobs:
       SDK_VERSION_MINOR: 310
       URL_BASE: "https://repo.huaweicloud.com/openharmony/ohpm"
       FILE_BASENAME: "commandline-tools-linux-x64"
+      CMD_TOOL_DIR: "$HOME/setup-sdk"
     strategy:
       fail-fast: false
 
@@ -36,20 +37,29 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
+          
+      - name: Fetch commandline tools
+        uses: actions/cache@v4
+        id: cmd-cache
+        with:
+          path: "${{ env.CMD_TOOL_DIR }}/${{ env.FILE_BASENAME }}.zip"
+          key: ${{ env.FILE_BASENAME }}-${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}
 
       - name: Setup OpenHarmony SDK
         id: setup-sdk
         run: |
           # Prepare path
-          export CMDLINE_TOOL_DIR="${HOME}/setup-sdk"
-          mkdir -p "${CMDLINE_TOOL_DIR}"
+          mkdir -p "${CMD_TOOL_DIR}"
           
           # Download commandline tools and unzip
-          curl -L -o "${CMDLINE_TOOL_DIR}/${FILE_BASENAME}.zip" "${URL_BASE}/${SDK_VERSION_MAJOR}/${FILE_BASENAME}-${SDK_VERSION_MAJOR}-${SDK_VERSION_MINOR}.zip"
-          unzip "${CMDLINE_TOOL_DIR}/${FILE_BASENAME}.zip" -do "${CMDLINE_TOOL_DIR}"
+          if "${{ !steps.cmd-cache.outputs.cache-hit }}"; then
+            curl -L -o "${CMD_TOOL_DIR}/${FILE_BASENAME}.zip" \
+            "${URL_BASE}/${SDK_VERSION_MAJOR}/${FILE_BASENAME}-${SDK_VERSION_MAJOR}.${SDK_VERSION_MINOR}.zip"
+          fi
+          unzip "${CMD_TOOL_DIR}/${FILE_BASENAME}.zip" -do "${CMD_TOOL_DIR}"
           
           # Setup environment variables
-          export PATH=${CMDLINE_TOOL_DIR}/command-line-tools/bin:$PATH
+          export PATH=${CMD_TOOL_DIR}/command-line-tools/bin:$PATH
           
           # Setup npm registry
           npm config set registry https://repo.huaweicloud.com/repository/npm/
