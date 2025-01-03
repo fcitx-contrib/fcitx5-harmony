@@ -14,7 +14,6 @@ jobs:
       JAVA_VERSION: "17"
       SDK_VERSION_MAJOR: 5.0.5
       SDK_VERSION_MINOR: 310
-      URL_BASE: "https://repo.huaweicloud.com/openharmony/ohpm"
       FILE_BASENAME: "commandline-tools-linux-x64"
       CMD_TOOL_DIR: "$HOME/setup-sdk"
     strategy:
@@ -37,34 +36,29 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-          
-      - name: Fetch commandline tools
-        uses: actions/cache@v4
-        id: cmd-cache
-        with:
-          path: "${{ env.CMD_TOOL_DIR }}/${{ env.FILE_BASENAME }}.zip"
-          key: ${{ env.FILE_BASENAME }}-${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}
 
       - name: Setup OpenHarmony SDK
         id: setup-sdk
         run: |
           # Prepare path
           mkdir -p "${CMD_TOOL_DIR}"
-          
+
           # Download commandline tools and unzip
-          if "${{ !steps.cmd-cache.outputs.cache-hit }}"; then
-            curl -L -o "${CMD_TOOL_DIR}/${FILE_BASENAME}.zip" \
-            "${URL_BASE}/${SDK_VERSION_MAJOR}/${FILE_BASENAME}-${SDK_VERSION_MAJOR}.${SDK_VERSION_MINOR}.zip"
-          fi
-          unzip "${CMD_TOOL_DIR}/${FILE_BASENAME}.zip" -do "${CMD_TOOL_DIR}"
-          
+          wget https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/manifest.txt
+          while IFS= read -r file; do
+            wget https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/$file
+          done < manifest.txt
+          cat *.zip.* > tool.zip
+          rm *.zip.*
+          unzip tool.zip -do "${CMD_TOOL_DIR}"
+
           # Setup environment variables
           export PATH=${CMD_TOOL_DIR}/command-line-tools/bin:$PATH
-          
+
           # Setup npm registry
           npm config set registry https://repo.huaweicloud.com/repository/npm/
           npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
-          
+
           # Setup ohpm
           ohpm -v
           ohpm config set registry https://ohpm.openharmony.cn/ohpm/
@@ -74,7 +68,7 @@ jobs:
         run: |
           # Install dependencies
           ohpm install --all
-          
+
           # Build product
           hvigorw -v
           hvigorw clean --no-daemon
