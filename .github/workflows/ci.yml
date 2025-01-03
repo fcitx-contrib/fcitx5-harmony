@@ -38,9 +38,10 @@ jobs:
       - name: Install OpenHarmony SDK
         run: |
           # Download commandline tools and unzip
-          wget https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/manifest.txt
+          wget -nv https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/manifest.txt
           while IFS= read -r file; do
-            wget https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/$file
+            echo "Downloading $file"
+            wget -nv https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/$file
           done < manifest.txt
           cat *.zip.* > tool.zip
           rm *.zip.*
@@ -68,11 +69,23 @@ jobs:
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
 
-      - name: Upload app
+      - name: Upload artifact
+        if: ${{ github.ref != 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
           name: entry-default-unsigned.hap
           path: entry/build/default/outputs/default/entry-default-unsigned.hap
+
+      - name: Release
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          prerelease: true
+          title: "Nightly Build"
+          files: |
+            entry/build/default/outputs/default/entry-default-unsigned.hap
 
       - name: Setup tmate session
         if: ${{ failure() }}
