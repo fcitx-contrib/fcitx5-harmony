@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      NODE_VERSION: 18
+      JAVA_VERSION: "17"
+      SDK_VERSION_MAJOR: 5.0.5
+      SDK_VERSION_MINOR: 310
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install OpenHarmony SDK
+        run: |
+          # Download commandline tools and unzip
+          wget -nv https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/manifest.txt
+          while IFS= read -r file; do
+            echo "Downloading $file"
+            wget -nv https://github.com/fcitx-contrib/ohpm-cli-tools/releases/download/${{ env.SDK_VERSION_MAJOR }}.${{ env.SDK_VERSION_MINOR }}/$file
+          done < manifest.txt
+          cat *.zip.* > tool.zip
+          rm *.zip.*
+          unzip tool.zip -d /tmp
+          echo /tmp/command-line-tools/bin >> $GITHUB_PATH
+
+      - name: Setup OpenHarmony SDK
+        run: |
+          # Setup npm registry
+          npm config set registry https://repo.huaweicloud.com/repository/npm/
+          npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
+
+          # Setup ohpm
+          ohpm -v
+          ohpm config set registry https://ohpm.openharmony.cn/ohpm/
+          ohpm config set strict_ssl false
+
+      - name: Build HAP
+        run: |
+          # Install dependencies
+          ohpm install --all
+
+          # Build product
+          hvigorw -v
+          hvigorw clean --no-daemon
+          hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
+
+      - name: Upload artifact
+        if: ${{ github.ref != 'refs/heads/main' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: entry-default-unsigned.hap
+          path: entry/build/default/outputs/default/entry-default-unsigned.hap
+
+      - name: Release
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: latest
+          prerelease: true
+          title: "Nightly Build"
+          files: |
+            entry/build/default/outputs/default/entry-default-unsigned.hap
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
