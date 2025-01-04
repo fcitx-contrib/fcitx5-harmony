@@ -36,7 +36,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Install OpenHarmony SDK
-        uses: fcitx-contrib/ohpm-cli-tools@dev
+        uses: fcitx-contrib/ohpm-cli-tools@master
         with:
           major: ${{ env.SDK_VERSION_MAJOR }}
           minor: ${{ env.SDK_VERSION_MINOR }}
