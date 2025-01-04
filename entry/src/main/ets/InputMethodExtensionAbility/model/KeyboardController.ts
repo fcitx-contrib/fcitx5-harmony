@@ -15,13 +15,13 @@ export class KeyboardController {
 
   public onCreate(context: InputMethodExtensionContext): void {
     this.ctx = context;
-    this.initWindow(); // 初始化窗口
-    this.registerListener(); // 注册对输入法框架的事件监听
+    this.initWindow();
+    this.registerListener();
   }
 
-  public onDestroy(): void { // 应用生命周期销毁
-    this.unRegisterListener(); // 去注册事件监听
-    if (this.panel) { // 销毁窗口
+  public onDestroy(): void {
+    this.unRegisterListener();
+    if (this.panel) {
       ability.destroyPanel(this.panel);
     }
     if (this.ctx) {
@@ -41,7 +41,7 @@ export class KeyboardController {
     }
   }
 
-  private initWindow(): void { // 初始化窗口
+  private initWindow(): void {
     if (this.ctx === undefined) {
       return;
     }
@@ -66,19 +66,17 @@ export class KeyboardController {
   }
 
   private registerListener(): void {
-    this.registerInputListener(); // 注册对输入法框架服务的监听
-    // 注册隐藏键盘事件监听等
+    this.registerInputListener();
   }
 
   private registerInputListener():
     void {
-    // 注册对输入法框架服务的开启及停止事件监听
     ability.on('inputStart', (kbController, textInputClient) => {
-      this.textInputClient = textInputClient; // 此为输入法客户端实例，由此调用输入法框架提供给输入法应用的功能接口
+      this.textInputClient = textInputClient;
       this.keyboardController = kbController;
     })
     ability.on('inputStop', () => {
-      this.onDestroy(); // 销毁KeyboardController
+      this.onDestroy();
     });
   }
 

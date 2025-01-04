@@ -35,10 +35,9 @@ export let textLayoutData: TextKey[][] = [
     { character: 'J' },
     { character: 'K' },
     { character: 'L' },
-    { character: 'A' },
   ],
   [
-    { character: '\'' },
+    { character: '`' },
     { character: 'Z' },
     { character: 'X' },
     { character: 'C' },

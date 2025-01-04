@@ -22,7 +22,7 @@ struct KeyItem {
     .width("8%")
     .height("65%")
     .onClick(() => {
-      keyboardController.insertText(this.keyValue.character);
+      keyboardController.insertText(this.keyValue.character.toLowerCase());
     })
   }
 }
@@ -72,8 +72,7 @@ export struct SpaceItem {
     .height("65%")
     .borderRadius(6)
     .onClick(() => {
-      // TODO: figure out how to send key event
-      // keyboardController.insertText(this.keyValue.character);
+      keyboardController.insertText(' ');
     })
   }
 }
