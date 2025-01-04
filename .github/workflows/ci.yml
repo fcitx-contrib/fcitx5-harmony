@@ -36,14 +36,13 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Install OpenHarmony SDK
-        uses: fcitx-contrib/ohpm-cli-tools@master
+        uses: fcitx-contrib/ohpm-cli-tools@dev
         with:
           major: ${{ env.SDK_VERSION_MAJOR }}
           minor: ${{ env.SDK_VERSION_MINOR }}
 
       - name: Setup OpenHarmony SDK
         run: |
-          echo /tmp/command-line-tools/bin >> $GITHUB_PATH
           # Setup npm registry
           npm config set registry https://repo.huaweicloud.com/repository/npm/
           npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
