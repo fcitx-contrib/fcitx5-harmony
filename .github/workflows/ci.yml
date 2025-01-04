@@ -43,6 +43,7 @@ jobs:
 
       - name: Setup OpenHarmony SDK
         run: |
+          echo /tmp/command-line-tools/bin >> $GITHUB_PATH
           # Setup npm registry
           npm config set registry https://repo.huaweicloud.com/repository/npm/
           npm config set "@ohos:registry" https://repo.harmonyos.com/npm/
