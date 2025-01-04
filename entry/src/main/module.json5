@@ -46,6 +46,14 @@
             "resource": "$profile:backup_config"
           }
         ]
+      },
+      {
+        "description": "inputMethod",
+        "name": "InputMethodExtensionAbility",
+        "icon": "$media:app_icon",
+        "srcEntry": "./ets/InputMethodExtensionAbility/FcitxInputMethodService.ts",
+        "type": "inputMethod",
+        "exported": true,
       }
     ]
   }
