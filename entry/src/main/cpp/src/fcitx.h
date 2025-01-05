@@ -1,0 +1,3 @@
+namespace fcitx {
+void init();
+}

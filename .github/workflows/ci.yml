@@ -7,8 +7,21 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt install -y --no-install-recommends clang-format
+
+      - name: Lint
+        run: ./scripts/lint.sh
+
   build:
     runs-on: ubuntu-24.04
+    needs: lint
     env:
       NODE_VERSION: 18
       JAVA_VERSION: "17"
@@ -42,6 +55,10 @@ jobs:
         with:
           major: ${{ env.SDK_VERSION_MAJOR }}
           minor: ${{ env.SDK_VERSION_MINOR }}
+
+      - name: Run codelinter
+        if: ${{ matrix.arch == 'x86_64' }}
+        run: codelinter
 
       - name: Setup OpenHarmony SDK
         run: |

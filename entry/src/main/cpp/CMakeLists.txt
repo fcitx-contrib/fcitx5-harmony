@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.24)
 project(fcitx5-harmony)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(PREBUILT_DIR "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
 
 # fcitx5-harmony/entry/.cxx/default/default/debug/hvigor/x86_64
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/native
-# C:Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
+# C:/Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
 list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_DIR}")
 
 find_library(UV NAMES uv)
@@ -32,5 +34,12 @@ option(ENABLE_LIBUUID "" OFF)
 option(BUILD_SPELL_DICT "" OFF)
 add_subdirectory(fcitx5)
 
+add_subdirectory(src)
+
 add_library(entry SHARED napi_init.cpp)
-target_link_libraries(entry PUBLIC libace_napi.z.so)
+target_include_directories(entry PRIVATE src)
+target_link_libraries(entry PRIVATE fcitx)
+target_link_libraries(entry PUBLIC
+    libace_napi.z.so
+    libhilog_ndk.z.so
+)
