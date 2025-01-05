@@ -1,5 +1,5 @@
 import { InputMethodExtensionAbility } from "@kit.IMEKit";
-import Want from "@ohos.app.ability.Want";
+import type Want from "@ohos.app.ability.Want";
 import keyboardController from "./model/KeyboardController";
 
 export default class FcitxInputMethodService extends InputMethodExtensionAbility {

@@ -1,0 +1,6 @@
+{
+    "clangd.arguments": [
+        "-background-index",
+        "-compile-commands-dir=entry/.cxx/default/default/debug/x86_64"
+    ]
+}
