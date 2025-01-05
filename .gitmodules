@@ -1,0 +1,3 @@
+[submodule "entry/src/main/cpp/fcitx5"]
+	path = entry/src/main/cpp/fcitx5
+	url = https://github.com/fcitx/fcitx5
