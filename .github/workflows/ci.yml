@@ -56,6 +56,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt install -y --no-install-recommends gettext
           ./scripts/install-deps.sh ${{ matrix.arch }}
 
       - name: Filter ABI
