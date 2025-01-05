@@ -16,6 +16,8 @@ jobs:
       SDK_VERSION_MINOR: 310
     strategy:
       fail-fast: false
+      matrix:
+        arch: [arm64-v8a, x86_64]
 
     steps:
       - name: Checkout
@@ -52,8 +54,22 @@ jobs:
           ohpm config set registry https://ohpm.openharmony.cn/ohpm/
           ohpm config set strict_ssl false
 
+      - name: Install dependencies
+        run: |
+          ./scripts/install-deps.sh ${{ matrix.arch }}
+
+      - name: Filter ABI
+        run: |
+          if [[ ${{ matrix.arch }} == "arm64-v8a" ]]; then
+            sed -i '/x86_64/d' build-profile.json5
+          else
+            sed -i '/arm64-v8a/d' build-profile.json5
+          fi
+          cat build-profile.json5
+
       - name: Build HAP
         run: |
+          git apply --directory=entry/src/main/cpp/fcitx5 patches/fcitx5.patch
           # Install dependencies
           ohpm install --all
 
@@ -61,16 +77,29 @@ jobs:
           hvigorw -v
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
+          mv entry/build/default/outputs/default/entry-default-unsigned.hap fcitx5-harmony-${{ matrix.arch }}.hap
 
       - name: Upload artifact
-        if: ${{ github.ref != 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
-          name: entry-default-unsigned.hap
-          path: entry/build/default/outputs/default/entry-default-unsigned.hap
+          name: fcitx5-harmony-${{ matrix.arch }}.hap
+          path: fcitx5-harmony-${{ matrix.arch }}.hap
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
+  release:
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
       - name: Release
-        if: ${{ github.ref == 'refs/heads/main' }}
         uses: 'marvinpinto/action-automatic-releases@latest'
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -78,8 +107,4 @@ jobs:
           prerelease: true
           title: "Nightly Build"
           files: |
-            entry/build/default/outputs/default/entry-default-unsigned.hap
-
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+            *.hap
