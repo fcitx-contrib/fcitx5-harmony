@@ -6,7 +6,6 @@
 /.hvigor
 .cxx
 /.clangd
-/.clang-format
 /.clang-tidy
 **/.test
 /.appanalyzer
