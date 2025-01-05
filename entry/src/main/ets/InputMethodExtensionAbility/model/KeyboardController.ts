@@ -1,4 +1,5 @@
-import { inputMethodEngine, InputMethodExtensionContext } from '@kit.IMEKit'
+import { inputMethodEngine } from '@kit.IMEKit'
+import type { InputMethodExtensionContext} from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
 

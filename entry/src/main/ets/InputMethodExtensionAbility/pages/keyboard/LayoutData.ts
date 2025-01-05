@@ -1,4 +1,4 @@
-import { TextKey } from "./KeyType"
+import type { TextKey } from "./KeyType"
 
 export let textLayoutData: TextKey[][] = [
   [
