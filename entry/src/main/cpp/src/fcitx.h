@@ -1,3 +1,5 @@
+#include <string>
+
 namespace fcitx {
-void init();
+void init(const std::string &bundle, const std::string &resfile);
 }

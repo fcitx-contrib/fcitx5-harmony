@@ -1,1 +1,1 @@
-export const add: (a: number, b: number) => number;
+export const init: (bundle: string, resfile: string) => void;
