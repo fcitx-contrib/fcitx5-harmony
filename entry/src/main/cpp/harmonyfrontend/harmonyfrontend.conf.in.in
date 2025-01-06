@@ -1,0 +1,7 @@
+[Addon]
+Name=Harmony Frontend
+Type=StaticLibrary
+Library=libharmonyfrontend
+Category=Frontend
+Version=@PROJECT_VERSION@
+Configurable=False

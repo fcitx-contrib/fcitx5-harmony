@@ -95,6 +95,7 @@ jobs:
           hvigorw -v
           hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
+          hvigorw assembleHap --mode module -p product=default --parallel --no-daemon # bundle generated resfile
           mv entry/build/default/outputs/default/entry-default-unsigned.hap fcitx5-harmony-${{ matrix.arch }}.hap
 
       - name: Upload artifact

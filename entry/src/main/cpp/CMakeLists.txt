@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.24)
-project(fcitx5-harmony)
+project(fcitx5-harmony VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
 set(PREBUILT_DIR "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
+set(CMAKE_INSTALL_PREFIX "/usr")
 
-# fcitx5-harmony/entry/.cxx/default/default/debug/hvigor/x86_64
+# fcitx5-harmony/entry/.cxx/default/default/debug/hvigor/x86_64 this is also PROJECT_BINARY_DIR
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/native
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
 list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_DIR}")
@@ -34,12 +35,16 @@ option(ENABLE_LIBUUID "" OFF)
 option(BUILD_SPELL_DICT "" OFF)
 add_subdirectory(fcitx5)
 
+add_subdirectory(harmonyfrontend)
 add_subdirectory(src)
 
 add_library(entry SHARED napi_init.cpp)
 target_include_directories(entry PRIVATE src)
 target_link_libraries(entry PRIVATE fcitx)
-target_link_libraries(entry PUBLIC
-    libace_napi.z.so
-    libhilog_ndk.z.so
+target_link_libraries(entry PUBLIC libace_napi.z.so)
+
+# XXX: This won't be bundled into HAP for the first run of hvigorw assembleHap.
+add_custom_command(TARGET entry
+    POST_BUILD  COMMAND
+    node "${PROJECT_SOURCE_DIR}/../../../../scripts/postbuild.mjs" "${PROJECT_SOURCE_DIR}/../resources/resfile" "${PROJECT_BINARY_DIR}"
 )
