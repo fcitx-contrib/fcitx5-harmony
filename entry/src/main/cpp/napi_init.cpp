@@ -16,6 +16,10 @@
     std::string name(len##i, '\0');                                                                                    \
     napi_get_value_string_utf8(env, args[i], name.data(), len##i + 1, &len##i);
 
+#define GET_U32(name, i)                                                                                               \
+    uint32_t name;                                                                                                     \
+    napi_get_value_uint32(env, args[i], &name);
+
 #define GET_I32(name, i)                                                                                               \
     int32_t name;                                                                                                      \
     napi_get_value_int32(env, args[i], &name);
@@ -42,11 +46,12 @@ API(focusOut) {
     return {};
 }
 
-API(processKeyCode) {
-    GET_ARGS(2)
-    GET_I32(keyCode, 0)
-    GET_BOOL(isRelease, 1)
-    fcitx::processKeyCode(keyCode, isRelease);
+API(processKey) {
+    GET_ARGS(3)
+    GET_U32(unicode, 0)
+    GET_I32(keyCode, 1)
+    GET_BOOL(isRelease, 2)
+    fcitx::processKey(unicode, keyCode, isRelease);
     return {};
 }
 
@@ -56,7 +61,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"init", nullptr, init, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusIn", nullptr, focusIn, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"processKeyCode", nullptr, processKeyCode, nullptr, nullptr, nullptr, napi_default, nullptr}};
+        {"processKey", nullptr, processKey, nullptr, nullptr, nullptr, napi_default, nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
 }

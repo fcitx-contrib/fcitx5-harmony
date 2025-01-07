@@ -1,7 +1,6 @@
 import { inputMethodEngine } from '@kit.IMEKit'
 import type { InputMethodExtensionContext} from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
-import { KeyCode } from '@kit.InputKit';
 import fcitx from 'libentry.so';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
@@ -32,6 +31,10 @@ export class KeyboardController {
     if (this.ctx) {
       this.ctx.destroy();
     }
+  }
+
+  public handleKey(key: string, keyCode?: number): void {
+    fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
   }
 
   public insertText(text: string): void {
@@ -72,7 +75,7 @@ export class KeyboardController {
 
   private physicalKeyEventHandler(e: inputMethodEngine.KeyEvent): boolean {
     const isRelease = e.keyAction === 3
-    fcitx.processKeyCode(e.keyCode, isRelease)
+    fcitx.processKey(0, e.keyCode, isRelease)
     return false
   }
 
