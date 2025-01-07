@@ -1,5 +1,6 @@
 add_library(fcitx SHARED
     fcitx.cpp
+    keycode.cpp
 )
 target_link_libraries(fcitx Fcitx5::Core libhilog_ndk.z.so)
 

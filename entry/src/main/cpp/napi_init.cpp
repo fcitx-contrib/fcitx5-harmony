@@ -1,6 +1,9 @@
+#include "fcitx.cpp"
 #include "napi/native_api.h"
 #include "fcitx.h"
 #include <string>
+
+#define API(func) static napi_value func(napi_env env, napi_callback_info info)
 
 #define GET_ARGS(n)                                                                                                    \
     size_t argc = n;                                                                                                   \
@@ -13,7 +16,15 @@
     std::string name(len##i, '\0');                                                                                    \
     napi_get_value_string_utf8(env, args[i], name.data(), len##i + 1, &len##i);
 
-static napi_value init(napi_env env, napi_callback_info info) {
+#define GET_I32(name, i)                                                                                               \
+    int32_t name;                                                                                                      \
+    napi_get_value_int32(env, args[i], &name);
+
+#define GET_BOOL(name, i)                                                                                              \
+    bool name;                                                                                                         \
+    napi_get_value_bool(env, args[i], &name);
+
+API(init) {
     GET_ARGS(2)
     GET_STRING(bundle, 0)
     GET_STRING(resfile, 1)
@@ -21,9 +32,31 @@ static napi_value init(napi_env env, napi_callback_info info) {
     return {};
 }
 
+API(focusIn) {
+    fcitx::focusIn();
+    return {};
+}
+
+API(focusOut) {
+    fcitx::focusOut();
+    return {};
+}
+
+API(processKeyCode) {
+    GET_ARGS(2)
+    GET_I32(keyCode, 0)
+    GET_BOOL(isRelease, 1)
+    fcitx::processKeyCode(keyCode, isRelease);
+    return {};
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
-    napi_property_descriptor desc[] = {{"init", nullptr, init, nullptr, nullptr, nullptr, napi_default, nullptr}};
+    napi_property_descriptor desc[] = {
+        {"init", nullptr, init, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"focusIn", nullptr, focusIn, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"processKeyCode", nullptr, processKeyCode, nullptr, nullptr, nullptr, napi_default, nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
 }

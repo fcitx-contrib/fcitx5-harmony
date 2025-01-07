@@ -2,8 +2,10 @@ import { inputMethodEngine } from '@kit.IMEKit'
 import type { InputMethodExtensionContext} from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
+import fcitx from 'libentry.so';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
+const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
 
 export class KeyboardController {
   private ctx: InputMethodExtensionContext | undefined = undefined;
@@ -15,12 +17,14 @@ export class KeyboardController {
   }
 
   public onCreate(context: InputMethodExtensionContext): void {
+    console.debug("onCreate")
     this.ctx = context;
     this.initWindow();
     this.registerListener();
   }
 
   public onDestroy(): void {
+    console.debug("onDestroy")
     this.unRegisterListener();
     if (this.panel) {
       ability.destroyPanel(this.panel);
@@ -66,26 +70,37 @@ export class KeyboardController {
     });
   }
 
-  private registerListener(): void {
-    this.registerInputListener();
+  private physicalKeyEventHandler(e: inputMethodEngine.KeyEvent): boolean {
+    const isRelease = e.keyAction === 3
+    fcitx.processKeyCode(e.keyCode, isRelease)
+    return false
   }
 
-  private registerInputListener():
-    void {
+  private registerListener(): void {
+    this.registerInputListener();
+    keyboardDelegate.on('keyDown', this.physicalKeyEventHandler)
+    keyboardDelegate.on('keyUp', this.physicalKeyEventHandler)
+  }
+
+  private registerInputListener(): void {
     ability.on('inputStart', (kbController, textInputClient) => {
+      console.debug('inputStart')
       this.textInputClient = textInputClient;
       this.keyboardController = kbController;
+      fcitx.focusIn()
     })
     ability.on('inputStop', () => {
-      this.onDestroy();
+      console.debug('inputStop')
+      fcitx.focusOut()
     });
   }
 
-  private unRegisterListener():
-    void {
+  private unRegisterListener(): void {
     ability.off('inputStart');
     ability.off('inputStop', () => {
     });
+    keyboardDelegate.off('keyDown')
+    keyboardDelegate.off('keyUp')
   }
 }
 
