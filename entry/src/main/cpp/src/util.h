@@ -8,8 +8,7 @@ namespace fcitx {
 extern std::unique_ptr<Instance> instance;
 extern std::unique_ptr<EventDispatcher> dispatcher;
 
-template <class F, class T = std::invoke_result_t<F>>
-inline T with_fcitx(F func) {
+template <class F, class T = std::invoke_result_t<F>> inline T with_fcitx(F func) {
     std::promise<T> prom;
     std::future<T> fut = prom.get_future();
     dispatcher->schedule([&prom, func = std::move(func)]() {
@@ -28,4 +27,4 @@ inline T with_fcitx(F func) {
     fut.wait();
     return fut.get();
 }
-}
+} // namespace fcitx
