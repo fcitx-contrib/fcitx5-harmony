@@ -1,3 +1,4 @@
+#include "fcitx.h"
 #include <fcitx-utils/event.h>
 #include <fcitx-utils/eventdispatcher.h>
 #include <fcitx-utils/standardpath.h>
@@ -73,9 +74,9 @@ void focusOut() {
     with_fcitx([] { frontend->focusOut(); });
 }
 
-void processKeyCode(int32_t keyCode, bool isRelease) {
-    with_fcitx([keyCode, isRelease] {
-        auto key = ohKeyCodeToFcitxKey(keyCode);
+void processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {
+    with_fcitx([unicode, keyCode, isRelease] {
+        auto key = ohKeyToFcitxKey(unicode, keyCode);
         return frontend->keyEvent(key, isRelease);
     });
 }

@@ -272,7 +272,8 @@ uint16_t ohKeyCodeToFcitxKeyCode(int32_t keyCode) {
     return 0;
 }
 
-Key ohKeyCodeToFcitxKey(int32_t keyCode) {
-    return Key{ohKeyCodeToFcitxKeySym(keyCode), KeyStates{}, ohKeyCodeToFcitxKeyCode(keyCode)};
+Key ohKeyToFcitxKey(uint32_t unicode, int32_t keyCode) {
+    auto keysym = unicode ? Key::keySymFromUnicode(unicode) : ohKeyCodeToFcitxKeySym(keyCode);
+    return Key{keysym, KeyStates{}, ohKeyCodeToFcitxKeyCode(keyCode)};
 }
 } // namespace fcitx

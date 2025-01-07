@@ -3,5 +3,5 @@
 #include <fcitx-utils/key.h>
 
 namespace fcitx {
-Key ohKeyCodeToFcitxKey(int32_t keyCode);
+Key ohKeyToFcitxKey(uint32_t unicode, int32_t keyCode);
 }
