@@ -1,1 +1,4 @@
-export const init: (bundle: string, resfile: string) => void;
+export const init: (bundle: string, resfile: string) => void
+export const focusIn: () => void
+export const focusOut: () => void
+export const processKeyCode: (keyCode: number, isRelease: boolean) => void

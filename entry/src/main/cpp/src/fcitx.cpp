@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <filesystem>
 #include "nativestreambuf.h"
+#include "keycode.h"
+#include "util.h"
 #include "../harmonyfrontend/harmonyfrontend.h"
 
 #ifdef __x86_64__
@@ -61,5 +63,20 @@ void init(const std::string &bundle, const std::string &resfile) {
     dispatcher->attach(&instance->eventLoop());
     fcitx_thread = std::thread([] { instance->eventLoop().exec(); });
     frontend = dynamic_cast<HarmonyFrontend *>(addonMgr.addon("harmonyfrontend"));
+}
+
+void focusIn() {
+    with_fcitx([] { frontend->focusIn(); });
+}
+
+void focusOut() {
+    with_fcitx([] { frontend->focusOut(); });
+}
+
+void processKeyCode(int32_t keyCode, bool isRelease) {
+    with_fcitx([keyCode, isRelease] {
+        auto key = ohKeyCodeToFcitxKey(keyCode);
+        return frontend->keyEvent(key, isRelease);
+    });
 }
 } // namespace fcitx
