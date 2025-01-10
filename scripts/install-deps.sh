@@ -19,6 +19,7 @@ for dep in "${deps[@]}"; do
 done
 
 RES_EXTRACT_DIR=entry/src/main/resources/resfile/usr
+mkdir -p $RES_EXTRACT_DIR
 
 file=chinese-addons-any.tar.bz2
 [[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-plugins/releases/download/macos/$file
