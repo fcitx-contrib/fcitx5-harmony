@@ -11,10 +11,10 @@ void HarmonyFrontend::createInputContext() {
     ic_->setFocusGroup(&focusGroup_);
 }
 
-bool HarmonyFrontend::keyEvent(const Key &key, bool isRelease) {
+InputContextState HarmonyFrontend::keyEvent(const Key &key, bool isRelease) {
     KeyEvent event(ic_, key, isRelease);
     ic_->keyEvent(event);
-    return event.accepted();
+    return ic_->popState(event.accepted());
 }
 
 void HarmonyFrontend::focusIn() { ic_->focusIn(); }
@@ -30,11 +30,20 @@ HarmonyInputContext::HarmonyInputContext(HarmonyFrontend *frontend, InputContext
 
 HarmonyInputContext::~HarmonyInputContext() { destroy(); }
 
-void HarmonyInputContext::commitStringImpl(const std::string &text) { FCITX_ERROR() << "commit " << text; }
+void HarmonyInputContext::commitStringImpl(const std::string &text) { state_.commit += text; }
 
 void HarmonyInputContext::updatePreeditImpl() {
     auto preedit = frontend_->instance()->outputFilter(this, inputPanel().clientPreedit());
-    FCITX_ERROR() << "setPreedit " << preedit.toString() << preedit.cursor();
+    state_.preedit = preedit.toString();
+    state_.cursorPos = preedit.cursor();
+}
+
+InputContextState HarmonyInputContext::popState(bool accepted) {
+    auto state = state_;
+    // Don't clear preedit as fcitx may not update it when not changed.
+    state_.commit = "";
+    state.accepted = accepted;
+    return state;
 }
 } // namespace fcitx
 

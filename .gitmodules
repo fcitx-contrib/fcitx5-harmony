@@ -1,3 +1,9 @@
 [submodule "entry/src/main/cpp/fcitx5"]
 	path = entry/src/main/cpp/fcitx5
 	url = https://github.com/fcitx/fcitx5
+[submodule "entry/src/main/cpp/libime"]
+	path = entry/src/main/cpp/libime
+	url = https://github.com/fcitx/libime
+[submodule "entry/src/main/cpp/fcitx5-chinese-addons"]
+	path = entry/src/main/cpp/fcitx5-chinese-addons
+	url = https://github.com/fcitx/fcitx5-chinese-addons

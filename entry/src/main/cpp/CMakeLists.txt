@@ -10,6 +10,8 @@ set(CMAKE_INSTALL_PREFIX "/usr")
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/native
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
 list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_DIR}")
+set(ENV{PKG_CONFIG_PATH} "${PREBUILT_DIR}/lib/pkgconfig")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_library(UV NAMES uv)
 add_library(ohos_uv SHARED IMPORTED)
@@ -34,6 +36,16 @@ option(ENABLE_EMOJI "" OFF)
 option(ENABLE_LIBUUID "" OFF)
 option(BUILD_SPELL_DICT "" OFF)
 add_subdirectory(fcitx5)
+
+option(ENABLE_DATA "" OFF)
+option(ENABLE_TOOLS "" OFF)
+add_subdirectory(libime)
+
+option(ENABLE_CLOUDPINYIN "" OFF)
+option(ENABLE_GUI "" OFF)
+set(OPENCC_INCLUDE_DIR "${PREBUILT_DIR}/include/opencc")
+add_subdirectory(fcitx5-chinese-addons)
+target_link_libraries(chttrans "-L${PREBUILT_DIR}/lib" marisa)
 
 add_subdirectory(harmonyfrontend)
 add_subdirectory(src)
