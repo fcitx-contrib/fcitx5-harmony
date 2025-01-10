@@ -43,6 +43,7 @@ add_subdirectory(libime)
 
 option(ENABLE_CLOUDPINYIN "" OFF)
 option(ENABLE_GUI "" OFF)
+set(OPENCC_INCLUDE_DIR "${PREBUILT_DIR}/include/opencc")
 add_subdirectory(fcitx5-chinese-addons)
 target_link_libraries(chttrans "-L${PREBUILT_DIR}/lib" marisa)
 
