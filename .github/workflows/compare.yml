@@ -20,7 +20,7 @@ jobs:
       - name: Compare content
         run: |
           for arch in arm64-v8a x86_64; do
-            wget -O release-$arch.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-x86_64.hap
+            wget -O release-$arch.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-$arch.hap
             tar tf release-$arch.hap > release-$arch.list
             echo "## $arch comparison" >> summary.md
             tar tf fcitx5-harmony-$arch.hap > $arch.list
