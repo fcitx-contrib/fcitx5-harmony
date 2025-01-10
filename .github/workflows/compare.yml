@@ -1,0 +1,53 @@
+name: Compare
+
+on:
+  workflow_call:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release
+        run: wget -O release.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-x86_64.hap
+
+      - name: Install bsdtar
+        run: |
+          sudo apt install -y libarchive-tools
+          sudo ln -sf /usr/bin/bsdtar /usr/bin/tar
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Compare content
+        run: |
+          tar tf release.hap > release.list
+          for arch in arm64-v8a x86_64; do
+            echo "## $arch comparison" >> summary.md
+            tar tf fcitx5-harmony-$arch.hap > $arch.list
+            diff -u release.list $arch.list > $arch.diff || true
+            if [[ -s $arch.diff ]]; then
+              echo '```diff' >> summary.md
+              cat $arch.diff >> summary.md
+              echo '```' >> summary.md
+            else
+              echo "No difference." >> summary.md
+            fi
+          done
+
+      - name: Find comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: "x86_64 comparison"
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body-path: summary.md
+          edit-mode: replace

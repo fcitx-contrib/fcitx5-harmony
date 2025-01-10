@@ -88,6 +88,7 @@ jobs:
       - name: Build HAP
         run: |
           git apply --directory=entry/src/main/cpp/fcitx5 patches/fcitx5.patch
+          git apply --directory=entry/src/main/cpp/libime patches/libime.patch
           # Install dependencies
           ohpm install --all
 
@@ -107,6 +108,11 @@ jobs:
       - name: Setup tmate session
         if: ${{ failure() }}
         uses: mxschmitt/action-tmate@v3
+
+  compare:
+    if: ${{ github.ref != 'refs/heads/main' }}
+    needs: build
+    uses: ./.github/workflows/compare.yml
 
   release:
     needs: build

@@ -1,0 +1,41 @@
+diff --git a/src/libime/core/CMakeLists.txt b/src/libime/core/CMakeLists.txt
+index d51e732..14fe6b2 100644
+--- a/src/libime/core/CMakeLists.txt
++++ b/src/libime/core/CMakeLists.txt
+@@ -71,8 +71,7 @@ set(IMECore_SOVERSION 0)
+ 
+ add_library(IMECore ${LIBIME_SRCS})
+ set_target_properties(IMECore
+-                      PROPERTIES VERSION ${IMECore_VERSION}
+-                      SOVERSION ${IMECore_SOVERSION}
++                      PROPERTIES
+                       EXPORT_NAME Core
+ )
+ target_include_directories(IMECore PUBLIC
+diff --git a/src/libime/pinyin/CMakeLists.txt b/src/libime/pinyin/CMakeLists.txt
+index 96fcbbb..e18a5d0 100644
+--- a/src/libime/pinyin/CMakeLists.txt
++++ b/src/libime/pinyin/CMakeLists.txt
+@@ -34,8 +34,6 @@ set(IMEPinyin_SOVERSION 0)
+ 
+ add_library(IMEPinyin ${LIBIME_PINYIN_SRCS})
+ set_target_properties(IMEPinyin PROPERTIES
+-                      VERSION ${IMEPinyin_VERSION}
+-                      SOVERSION ${IMEPinyin_SOVERSION}
+                       EXPORT_NAME Pinyin
+ )
+ target_include_directories(IMEPinyin PUBLIC
+diff --git a/src/libime/table/CMakeLists.txt b/src/libime/table/CMakeLists.txt
+index 620a6ee..5eea112 100644
+--- a/src/libime/table/CMakeLists.txt
++++ b/src/libime/table/CMakeLists.txt
+@@ -25,8 +25,7 @@ set(IMETable_SOVERSION 0)
+ 
+ add_library(IMETable ${LIBIME_TABLE_SRCS})
+ set_target_properties(IMETable
+-                      PROPERTIES VERSION ${IMETable_VERSION}
+-                      SOVERSION ${IMETable_SOVERSION}
++                      PROPERTIES
+                       EXPORT_NAME Table
+ )
+ 
