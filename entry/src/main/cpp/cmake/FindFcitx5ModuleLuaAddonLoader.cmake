@@ -1,0 +1,1 @@
+set(Fcitx5ModuleLuaAddonLoader_FOUND TRUE)
