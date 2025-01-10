@@ -6,6 +6,7 @@
 #include <fcitx/addonmanager.h>
 #include <fcitx/focusgroup.h>
 #include <fcitx/instance.h>
+#include "../src/fcitx.h"
 
 namespace fcitx {
 class HarmonyInputContext;
@@ -21,7 +22,7 @@ public:
     void setConfig(const RawConfig &config) override {}
 
     void createInputContext();
-    bool keyEvent(const Key &key, bool isRelease);
+    InputContextState keyEvent(const Key &key, bool isRelease);
     void focusIn();
     void focusOut();
 
@@ -46,8 +47,10 @@ public:
     void deleteSurroundingTextImpl(int offset, unsigned int size) override {}
     void forwardKeyImpl(const ForwardKeyEvent &key) override {}
     void updatePreeditImpl() override;
+    InputContextState popState(bool accepted);
 
 private:
     HarmonyFrontend *frontend_;
+    InputContextState state_;
 };
 } // namespace fcitx

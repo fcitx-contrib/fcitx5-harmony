@@ -11,6 +11,7 @@
 #include "keycode.h"
 #include "util.h"
 #include "../harmonyfrontend/harmonyfrontend.h"
+#include "inputmethod.h"
 
 #ifdef __x86_64__
 #define ARCH "x86_64"
@@ -45,8 +46,10 @@ void setupEnv(const std::string &bundle, const std::string &resfile) {
     setenv("FCITX_ADDON_DIRS", fcitx_addon_dirs.c_str(), 1);
     ::fs::path xdg_data_dirs = resfilePath / "usr" / "share";
     std::string fcitx_data_dirs = xdg_data_dirs / "fcitx5";
+    std::string libime_model_dirs = resfilePath / "usr" / "lib" / "libime";
     setenv("XDG_DATA_DIRS", xdg_data_dirs.c_str(), 1);
     setenv("FCITX_DATA_DIRS", fcitx_data_dirs.c_str(), 1);
+    setenv("LIBIME_MODEL_DIRS", libime_model_dirs.c_str(), 1);
 }
 
 void init(const std::string &bundle, const std::string &resfile) {
@@ -64,6 +67,7 @@ void init(const std::string &bundle, const std::string &resfile) {
     dispatcher->attach(&instance->eventLoop());
     fcitx_thread = std::thread([] { instance->eventLoop().exec(); });
     frontend = dynamic_cast<HarmonyFrontend *>(addonMgr.addon("harmonyfrontend"));
+    setInputMethods({"pinyin"}); // XXX: for test only.
 }
 
 void focusIn() {
@@ -74,8 +78,8 @@ void focusOut() {
     with_fcitx([] { frontend->focusOut(); });
 }
 
-void processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {
-    with_fcitx([unicode, keyCode, isRelease] {
+InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {
+    return with_fcitx([unicode, keyCode, isRelease] {
         auto key = ohKeyToFcitxKey(unicode, keyCode);
         return frontend->keyEvent(key, isRelease);
     });

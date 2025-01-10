@@ -1,6 +1,7 @@
 import { inputMethodEngine } from '@kit.IMEKit'
 import type { InputMethodExtensionContext} from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
+import { KeyCode } from '@kit.InputKit';
 import fcitx from 'libentry.so';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
@@ -33,20 +34,34 @@ export class KeyboardController {
     }
   }
 
+  private processResult(res: ReturnType<typeof fcitx.processKey>): boolean {
+    if (res.commit) {
+      this.insertText(res.commit)
+    }
+    return res.accepted
+  }
+
   public handleKey(key: string, keyCode?: number): void {
-    fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
+    const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
+    if (!this.processResult(res)) {
+      if (key) {
+        this.insertText(key)
+      } else {
+        switch (keyCode) {
+        case KeyCode.KEYCODE_DEL:
+          this.deleteForward(1)
+          break
+        }
+      }
+    }
   }
 
   public insertText(text: string): void {
-    if (this.textInputClient) {
-      this.textInputClient.insertText(text);
-    }
+    this.textInputClient?.insertTextSync(text);
   }
 
   public deleteForward(length: number): void {
-    if (this.textInputClient) {
-      this.textInputClient.deleteForward(length);
-    }
+    this.textInputClient?.deleteForwardSync(length);
   }
 
   private initWindow(): void {
@@ -75,14 +90,14 @@ export class KeyboardController {
 
   private physicalKeyEventHandler(e: inputMethodEngine.KeyEvent): boolean {
     const isRelease = e.keyAction === 3
-    fcitx.processKey(0, e.keyCode, isRelease)
-    return false
+    const res = fcitx.processKey(0, e.keyCode, isRelease)
+    return this.processResult(res)
   }
 
   private registerListener(): void {
     this.registerInputListener();
-    keyboardDelegate.on('keyDown', this.physicalKeyEventHandler)
-    keyboardDelegate.on('keyUp', this.physicalKeyEventHandler)
+    keyboardDelegate.on('keyDown', this.physicalKeyEventHandler.bind(this))
+    keyboardDelegate.on('keyUp', this.physicalKeyEventHandler.bind(this))
   }
 
   private registerInputListener(): void {

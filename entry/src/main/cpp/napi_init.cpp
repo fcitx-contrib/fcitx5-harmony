@@ -28,6 +28,42 @@
     bool name;                                                                                                         \
     napi_get_value_bool(env, args[i], &name);
 
+#define OBJECT(name)                                                                                                   \
+    napi_value name;                                                                                                   \
+    napi_create_object(env, &name);
+
+#define STRING(name, value)                                                                                            \
+    napi_value name;                                                                                                   \
+    napi_create_string_utf8(env, value.c_str(), value.size(), &name);
+
+#define BOOL(name, value)                                                                                              \
+    napi_value name;                                                                                                   \
+    napi_get_boolean(env, value, &name);
+
+#define INT32(name, value)                                                                                             \
+    napi_value name;                                                                                                   \
+    napi_create_int32(env, value, &name);
+
+inline void set(napi_env env, napi_value object, const std::string key, const std::string &value) {
+    STRING(key_, key);
+    STRING(value_, value);
+    napi_set_property(env, object, key_, value_);
+}
+
+inline void set(napi_env env, napi_value object, const std::string key, bool value) {
+    STRING(key_, key);
+    BOOL(value_, value);
+    napi_set_property(env, object, key_, value_);
+}
+
+inline void set(napi_env env, napi_value object, const std::string key, int32_t value) {
+    STRING(key_, key);
+    INT32(value_, value);
+    napi_set_property(env, object, key_, value_);
+}
+
+#define SET(object, key, value) set(env, object, key, value);
+
 API(init) {
     GET_ARGS(2)
     GET_STRING(bundle, 0)
@@ -51,8 +87,13 @@ API(processKey) {
     GET_U32(unicode, 0)
     GET_I32(keyCode, 1)
     GET_BOOL(isRelease, 2)
-    fcitx::processKey(unicode, keyCode, isRelease);
-    return {};
+    auto state = fcitx::processKey(unicode, keyCode, isRelease);
+    OBJECT(ret)
+    SET(ret, "commit", state.commit)
+    SET(ret, "preedit", state.preedit)
+    SET(ret, "cursorPos", state.cursorPos)
+    SET(ret, "accepted", state.accepted)
+    return ret;
 }
 
 EXTERN_C_START

@@ -41,6 +41,11 @@ option(ENABLE_DATA "" OFF)
 option(ENABLE_TOOLS "" OFF)
 add_subdirectory(libime)
 
+option(ENABLE_CLOUDPINYIN "" OFF)
+option(ENABLE_GUI "" OFF)
+add_subdirectory(fcitx5-chinese-addons)
+target_link_libraries(chttrans "-L${PREBUILT_DIR}/lib" marisa)
+
 add_subdirectory(harmonyfrontend)
 add_subdirectory(src)
 
