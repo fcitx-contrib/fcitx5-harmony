@@ -7,9 +7,6 @@ jobs:
   compare:
     runs-on: ubuntu-latest
     steps:
-      - name: Download release
-        run: wget -O release.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-x86_64.hap
-
       - name: Install bsdtar
         run: |
           sudo apt install -y libarchive-tools
@@ -22,11 +19,12 @@ jobs:
 
       - name: Compare content
         run: |
-          tar tf release.hap > release.list
           for arch in arm64-v8a x86_64; do
+            wget -O release-$arch.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-x86_64.hap
+            tar tf release-$arch.hap > release-$arch.list
             echo "## $arch comparison" >> summary.md
             tar tf fcitx5-harmony-$arch.hap > $arch.list
-            diff -u release.list $arch.list > $arch.diff || true
+            diff -u release-$arch.list $arch.list > $arch.diff || true
             if [[ -s $arch.diff ]]; then
               echo '```diff' >> summary.md
               cat $arch.diff >> summary.md
