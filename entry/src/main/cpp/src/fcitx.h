@@ -12,7 +12,7 @@ struct InputContextState {
 };
 
 void init(const std::string &bundle, const std::string &resfile);
-void focusIn();
+void focusIn(bool clientPreedit);
 void focusOut();
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
 } // namespace fcitx

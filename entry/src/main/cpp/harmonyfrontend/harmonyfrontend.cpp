@@ -17,14 +17,19 @@ InputContextState HarmonyFrontend::keyEvent(const Key &key, bool isRelease) {
     return ic_->popState(event.accepted());
 }
 
-void HarmonyFrontend::focusIn() { ic_->focusIn(); }
+void HarmonyFrontend::focusIn(bool clientPreedit) {
+    CapabilityFlags flags;
+    if (clientPreedit) {
+        flags |= CapabilityFlag::Preedit;
+    }
+    ic_->setCapabilityFlags(flags);
+    ic_->focusIn();
+}
 
 void HarmonyFrontend::focusOut() { ic_->focusOut(); }
 
 HarmonyInputContext::HarmonyInputContext(HarmonyFrontend *frontend, InputContextManager &inputContextManager)
     : InputContext(inputContextManager, ""), frontend_(frontend) {
-    CapabilityFlags flags = CapabilityFlag::Preedit;
-    setCapabilityFlags(flags);
     created();
 }
 

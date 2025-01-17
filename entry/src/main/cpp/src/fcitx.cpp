@@ -70,8 +70,8 @@ void init(const std::string &bundle, const std::string &resfile) {
     setInputMethods({"pinyin"}); // XXX: for test only.
 }
 
-void focusIn() {
-    with_fcitx([] { frontend->focusIn(); });
+void focusIn(bool clientPreedit) {
+    with_fcitx([clientPreedit] { frontend->focusIn(clientPreedit); });
 }
 
 void focusOut() {

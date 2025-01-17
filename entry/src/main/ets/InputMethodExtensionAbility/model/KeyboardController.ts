@@ -1,5 +1,5 @@
 import { inputMethodEngine } from '@kit.IMEKit'
-import type { InputMethodExtensionContext} from '@kit.IMEKit'
+import type { InputMethodExtensionContext } from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
 import fcitx from 'libentry.so';
@@ -12,6 +12,8 @@ export class KeyboardController {
   private panel: inputMethodEngine.Panel | undefined = undefined;
   private textInputClient: inputMethodEngine.InputClient | undefined = undefined;
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
+  private preedit = ''
+  private preeditIndex = 0
 
   constructor() {
   }
@@ -34,11 +36,45 @@ export class KeyboardController {
     }
   }
 
-  private processResult(res: ReturnType<typeof fcitx.processKey>): boolean {
-    if (res.commit) {
-      this.insertText(res.commit)
+  private getCursor() {
+    if (!this.textInputClient) {
+      return -1
     }
-    return res.accepted
+    let step = 1024
+    while (true) {
+      const text = this.textInputClient.getForwardSync(step)
+      if (text.length < step) {
+        return text.length
+      }
+      step *= 2
+    }
+  }
+
+  private processResult(res: ReturnType<typeof fcitx.processKey>): boolean {
+    if (!res.accepted) {
+      return false
+    }
+    if (res.commit) {
+      if (this.preedit) {
+        this.textInputClient?.setPreviewTextSync('',
+          { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
+        this.textInputClient?.finishTextPreviewSync()
+      }
+      this.insertText(res.commit)
+      this.preedit = ''
+      this.preeditIndex = this.getCursor()
+    }
+    const start = this.preedit ? this.preeditIndex : this.getCursor()
+    const end = start + this.preedit.length
+    if (this.preedit || res.preedit) {
+      this.textInputClient?.setPreviewTextSync(res.preedit, { start, end })
+      if (!res.preedit) {
+        this.textInputClient?.finishTextPreviewSync()
+      }
+    }
+    this.preedit = res.preedit
+    this.preeditIndex = start
+    return true
   }
 
   public handleKey(key: string, keyCode?: number): void {
@@ -80,11 +116,8 @@ export class KeyboardController {
     };
     ability.createPanel(this.ctx, panelInfo).then(async (inputPanel: inputMethodEngine.Panel) => {
       this.panel = inputPanel;
-      if (this.panel) {
-        await this.panel.resize(dWidth, keyHeight);
-        await this.panel.moveTo(0, nonBarPosition);
-        await this.panel.setUiContent('InputMethodExtensionAbility/pages/Index');
-      }
+      await this.panel.resize(dWidth, keyHeight);
+      await this.panel.setUiContent('InputMethodExtensionAbility/pages/Index');
     });
   }
 
@@ -105,7 +138,8 @@ export class KeyboardController {
       console.debug('inputStart')
       this.textInputClient = textInputClient;
       this.keyboardController = kbController;
-      fcitx.focusIn()
+      const attribute = textInputClient.getEditorAttributeSync()
+      fcitx.focusIn(attribute.isTextPreviewSupported)
     })
     ability.on('inputStop', () => {
       console.debug('inputStop')
