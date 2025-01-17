@@ -73,7 +73,9 @@ API(init) {
 }
 
 API(focusIn) {
-    fcitx::focusIn();
+    GET_ARGS(1)
+    GET_BOOL(clientPreedit, 0)
+    fcitx::focusIn(clientPreedit);
     return {};
 }
 

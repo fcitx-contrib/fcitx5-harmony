@@ -23,7 +23,7 @@ public:
 
     void createInputContext();
     InputContextState keyEvent(const Key &key, bool isRelease);
-    void focusIn();
+    void focusIn(bool clientPreedit);
     void focusOut();
 
 private:

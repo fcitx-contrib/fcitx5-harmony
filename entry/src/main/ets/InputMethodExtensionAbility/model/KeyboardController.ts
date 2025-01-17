@@ -138,7 +138,8 @@ export class KeyboardController {
       console.debug('inputStart')
       this.textInputClient = textInputClient;
       this.keyboardController = kbController;
-      fcitx.focusIn()
+      const attribute = textInputClient.getEditorAttributeSync()
+      fcitx.focusIn(attribute.isTextPreviewSupported)
     })
     ability.on('inputStop', () => {
       console.debug('inputStop')
