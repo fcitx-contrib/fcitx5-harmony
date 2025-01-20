@@ -41,6 +41,10 @@ option(ENABLE_DATA "" OFF)
 option(ENABLE_TOOLS "" OFF)
 add_subdirectory(libime)
 
+option(USE_DLOPEN "" OFF)
+add_subdirectory(fcitx5-lua)
+target_link_libraries(luaaddonloader "-L${PREBUILT_DIR}/lib" lua)
+
 option(ENABLE_CLOUDPINYIN "" OFF)
 option(ENABLE_GUI "" OFF)
 set(OPENCC_INCLUDE_DIR "${PREBUILT_DIR}/include/opencc")

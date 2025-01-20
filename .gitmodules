@@ -7,3 +7,6 @@
 [submodule "entry/src/main/cpp/fcitx5-chinese-addons"]
 	path = entry/src/main/cpp/fcitx5-chinese-addons
 	url = https://github.com/fcitx/fcitx5-chinese-addons
+[submodule "entry/src/main/cpp/fcitx5-lua"]
+	path = entry/src/main/cpp/fcitx5-lua
+	url = https://github.com/fcitx/fcitx5-lua

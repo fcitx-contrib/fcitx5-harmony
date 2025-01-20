@@ -1,7 +1,10 @@
+set -e
+
 deps=(
   boost
   ecm
   fmt
+  lua
   libintl
   marisa
   opencc
@@ -21,6 +24,13 @@ done
 RES_EXTRACT_DIR=entry/src/main/resources/resfile/usr
 mkdir -p $RES_EXTRACT_DIR
 
-file=chinese-addons-any.tar.bz2
-[[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-plugins/releases/download/macos/$file
-tar xf cache/$file -C $RES_EXTRACT_DIR lib share
+addons=(
+  chinese-addons
+  lua
+)
+for addon in "${addons[@]}"; do
+  file=$addon-any.tar.bz2
+  [[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-plugins/releases/download/macos/$file
+  tar xf cache/$file -C $RES_EXTRACT_DIR lib || true
+  tar xf cache/$file -C $RES_EXTRACT_DIR share
+done
