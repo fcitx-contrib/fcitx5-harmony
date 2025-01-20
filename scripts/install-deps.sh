@@ -1,3 +1,5 @@
+set -e
+
 deps=(
   boost
   ecm
@@ -29,9 +31,6 @@ addons=(
 for addon in "${addons[@]}"; do
   file=$addon-any.tar.bz2
   [[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-plugins/releases/download/macos/$file
-  for dir in lib share; do
-    if tar tf "cache/$file" | grep -qE "^$dir($|/)"; then
-      tar xf cache/$file -C $RES_EXTRACT_DIR $dir
-    fi
-  done
+  tar xf cache/$file -C $RES_EXTRACT_DIR lib || true
+  tar xf cache/$file -C $RES_EXTRACT_DIR share
 done
