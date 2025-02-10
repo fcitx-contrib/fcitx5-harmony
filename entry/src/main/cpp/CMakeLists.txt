@@ -3,13 +3,14 @@ project(fcitx5-harmony VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(PREBUILT_DIR "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
+set(PREBUILT_DIR "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}/usr")
 set(CMAKE_INSTALL_PREFIX "/usr")
 
 # fcitx5-harmony/entry/.cxx/default/default/debug/hvigor/x86_64 this is also PROJECT_BINARY_DIR
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/native
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
 list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_DIR}")
+set(ENV{PKG_CONFIG_SYSROOT_DIR} "${PREBUILT_DIR}")
 set(ENV{PKG_CONFIG_PATH} "${PREBUILT_DIR}/lib/pkgconfig")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 

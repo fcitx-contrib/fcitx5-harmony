@@ -14,7 +14,7 @@ deps=(
 )
 
 ARCH=$1
-EXTRACT_DIR=entry/src/main/cpp/prebuilt/$ARCH
+EXTRACT_DIR=entry/src/main/cpp/prebuilt/$ARCH/usr
 mkdir -p $EXTRACT_DIR
 
 for dep in "${deps[@]}"; do
