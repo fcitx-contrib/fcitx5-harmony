@@ -21,9 +21,9 @@ jobs:
         run: |
           for arch in arm64-v8a x86_64; do
             wget -O release-$arch.hap https://github.com/fcitx-contrib/fcitx5-harmony/releases/download/latest/fcitx5-harmony-$arch.hap
-            tar tf release-$arch.hap > release-$arch.list
+            tar tf release-$arch.hap | sort > release-$arch.list
             echo "## $arch comparison" >> summary.md
-            tar tf fcitx5-harmony-$arch.hap > $arch.list
+            tar tf fcitx5-harmony-$arch.hap | sort > $arch.list
             diff -u release-$arch.list $arch.list > $arch.diff || true
             if [[ -s $arch.diff ]]; then
               echo '```diff' >> summary.md

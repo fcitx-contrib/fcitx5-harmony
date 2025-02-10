@@ -3,14 +3,21 @@ project(fcitx5-harmony VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(PREBUILT_DIR "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
+set(PREBUILT_ROOT "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
+set(PREBUILT_USR "${PREBUILT_ROOT}/usr")
 set(CMAKE_INSTALL_PREFIX "/usr")
 
 # fcitx5-harmony/entry/.cxx/default/default/debug/hvigor/x86_64 this is also PROJECT_BINARY_DIR
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/openharmony/native
 # C:/Program Files/Huawei/DevEco Studio/sdk/default/hms/native/sysroot/usr
-list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_DIR}")
-set(ENV{PKG_CONFIG_PATH} "${PREBUILT_DIR}/lib/pkgconfig")
+list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_USR}")
+
+if (CMAKE_HOST_WIN32)
+    set(PKG_CONFIG_EXECUTABLE "C:/msys64/usr/bin/pkg-config.exe")
+endif()
+set(ENV{PKG_CONFIG_SYSROOT_DIR} "${PREBUILT_ROOT}")
+set(ENV{PKG_CONFIG_PATH} "${PREBUILT_USR}/lib/pkgconfig")
+
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_library(UV NAMES uv)
@@ -43,13 +50,12 @@ add_subdirectory(libime)
 
 option(USE_DLOPEN "" OFF)
 add_subdirectory(fcitx5-lua)
-target_link_libraries(luaaddonloader "-L${PREBUILT_DIR}/lib" lua)
+target_link_libraries(luaaddonloader "-L${PREBUILT_USR}/lib" lua)
 
-option(ENABLE_CLOUDPINYIN "" OFF)
 option(ENABLE_GUI "" OFF)
-set(OPENCC_INCLUDE_DIR "${PREBUILT_DIR}/include/opencc")
+set(OPENCC_INCLUDE_DIR "${PREBUILT_USR}/include/opencc")
 add_subdirectory(fcitx5-chinese-addons)
-target_link_libraries(chttrans "-L${PREBUILT_DIR}/lib" marisa)
+target_link_libraries(chttrans "-L${PREBUILT_USR}/lib" marisa)
 
 add_subdirectory(harmonyfrontend)
 add_subdirectory(src)

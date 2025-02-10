@@ -2,17 +2,19 @@ set -e
 
 deps=(
   boost
+  curl
   ecm
   fmt
   lua
   libintl
   marisa
   opencc
+  openssl
   zstd
 )
 
 ARCH=$1
-EXTRACT_DIR=entry/src/main/cpp/prebuilt/$ARCH
+EXTRACT_DIR=entry/src/main/cpp/prebuilt/$ARCH/usr
 mkdir -p $EXTRACT_DIR
 
 for dep in "${deps[@]}"; do

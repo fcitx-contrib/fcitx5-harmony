@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d3ab20d4..12d55b3e 100644
+index 1538d9eb..d66cf273 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -226,7 +226,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
+@@ -238,7 +238,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
  include_directories(${CMAKE_CURRENT_BINARY_DIR})
  
  add_subdirectory(src)
@@ -25,10 +25,10 @@ index b2f37acd..0cf72d7c 100644
    )
  target_include_directories(Fcitx5Config PUBLIC
 diff --git a/src/lib/fcitx-utils/CMakeLists.txt b/src/lib/fcitx-utils/CMakeLists.txt
-index 9eb64046..d3d57501 100644
+index 2db6fb3b..9cce85d2 100644
 --- a/src/lib/fcitx-utils/CMakeLists.txt
 +++ b/src/lib/fcitx-utils/CMakeLists.txt
-@@ -121,8 +121,7 @@ ecm_setup_version(PROJECT
+@@ -125,8 +125,7 @@ ecm_setup_version(PROJECT
  
  add_library(Fcitx5Utils ${FCITX_UTILS_SOURCES})
  set_target_properties(Fcitx5Utils
