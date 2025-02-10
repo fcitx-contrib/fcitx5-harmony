@@ -2,12 +2,14 @@ set -e
 
 deps=(
   boost
+  curl
   ecm
   fmt
   lua
   libintl
   marisa
   opencc
+  openssl
   zstd
 )
 
