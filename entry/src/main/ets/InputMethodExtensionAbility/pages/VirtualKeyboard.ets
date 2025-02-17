@@ -1,6 +1,6 @@
 import { webview } from '@kit.ArkWeb'
 import keyboardController from '../model/KeyboardController'
-import { VirtualKeyboardEvent } from './fcitx5-keyboard-web/src/api'
+import { VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api'
 import { convertCode } from './keycode'
 
 webview.once("webInited", () => {
