@@ -36,3 +36,7 @@ for addon in "${addons[@]}"; do
   tar xf cache/$file -C $RES_EXTRACT_DIR lib || true
   tar xf cache/$file -C $RES_EXTRACT_DIR share
 done
+
+RAW_DIR=entry/src/main/resources/rawfile
+mkdir -p $RAW_DIR
+wget -O $RAW_DIR/index.html https://github.com/fcitx-contrib/fcitx5-keyboard-web/releases/download/harmony/index.html

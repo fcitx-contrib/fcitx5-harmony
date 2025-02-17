@@ -1,6 +1,6 @@
 {
   "src": [
     "pages/Index",
-    "InputMethodExtensionAbility/pages/Index"
+    "InputMethodExtensionAbility/pages/VirtualKeyboard"
   ]
 }

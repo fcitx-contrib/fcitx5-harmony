@@ -10,3 +10,6 @@
 [submodule "entry/src/main/cpp/fcitx5-lua"]
 	path = entry/src/main/cpp/fcitx5-lua
 	url = https://github.com/fcitx/fcitx5-lua
+[submodule "entry/src/main/ets/InputMethodExtensionAbility/pages/fcitx5-keyboard-web"]
+	path = entry/src/main/ets/InputMethodExtensionAbility/pages/fcitx5-keyboard-web
+	url = https://github.com/fcitx-contrib/fcitx5-keyboard-web

@@ -104,21 +104,18 @@ export class KeyboardController {
     if (this.ctx === undefined) {
       return;
     }
-    let dis = display.getDefaultDisplaySync();
-    let dWidth = dis.width;
-    let dHeight = dis.height;
-    let keyHeightRate = 0.3;
-    let keyHeight = dHeight * keyHeightRate;
-    let nonBarPosition = dHeight - keyHeight;
+    // 1260x2720 on emulator
+    const { width, height } = display.getDefaultDisplaySync()
+    let containerHeight = Math.min(width / 3 * 2, height / 3) // Same with xiaoyi on emulator
     let panelInfo: inputMethodEngine.PanelInfo = {
       type: inputMethodEngine.PanelType.SOFT_KEYBOARD,
       flag: inputMethodEngine.PanelFlag.FLG_FIXED
     };
-    ability.createPanel(this.ctx, panelInfo).then(async (inputPanel: inputMethodEngine.Panel) => {
+    ability.createPanel(this.ctx, panelInfo).then((inputPanel: inputMethodEngine.Panel) => {
       this.panel = inputPanel;
-      await this.panel.resize(dWidth, keyHeight);
-      await this.panel.setUiContent('InputMethodExtensionAbility/pages/Index');
-    });
+      this.panel.resize(width, containerHeight)
+      this.panel.setUiContent('InputMethodExtensionAbility/pages/VirtualKeyboard')
+    })
   }
 
   private physicalKeyEventHandler(e: inputMethodEngine.KeyEvent): boolean {
