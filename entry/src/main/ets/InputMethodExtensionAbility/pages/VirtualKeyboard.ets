@@ -30,6 +30,9 @@ struct Index {
           }
         })
         this.controller.postMessage('__init_port__', [ports[0]], '*')
+        keyboardController.setPort(this.port)
+        // Needed because webview isn't available on first focus in.
+        keyboardController.setEnterKeyType()
         this.webReady = true
       })
     }
