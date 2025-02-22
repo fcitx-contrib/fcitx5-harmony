@@ -1,7 +1,9 @@
+import { webview } from '@kit.ArkWeb'
 import { inputMethodEngine } from '@kit.IMEKit'
 import type { InputMethodExtensionContext } from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
+import { SystemEvent } from '../../../fcitx5-keyboard-web/src/api'
 import fcitx from 'libentry.so';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
@@ -10,6 +12,8 @@ const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical key
 export class KeyboardController {
   private ctx: InputMethodExtensionContext | undefined = undefined;
   private panel: inputMethodEngine.Panel | undefined = undefined;
+  private attribute: inputMethodEngine.EditorAttribute | null = null
+  private port: webview.WebMessagePort | null = null
   private textInputClient: inputMethodEngine.InputClient | undefined = undefined;
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
   private preedit = ''
@@ -34,6 +38,29 @@ export class KeyboardController {
     if (this.ctx) {
       this.ctx.destroy();
     }
+  }
+
+  public setPort(port: webview.WebMessagePort) {
+    this.port = port
+  }
+
+  private sendEvent(event: SystemEvent) {
+    this.port?.postMessageEvent(JSON.stringify(event))
+  }
+
+  public setEnterKeyType() {
+    const type = this.attribute?.enterKeyType ?? 0
+    const label = {
+      [inputMethodEngine.ENTER_KEY_TYPE_UNSPECIFIED]: '',
+      [inputMethodEngine.ENTER_KEY_TYPE_GO]: 'go',
+      [inputMethodEngine.ENTER_KEY_TYPE_SEARCH]: 'search',
+      [inputMethodEngine.ENTER_KEY_TYPE_SEND]: 'send',
+      [inputMethodEngine.ENTER_KEY_TYPE_NEXT]: 'next',
+      [inputMethodEngine.ENTER_KEY_TYPE_DONE]: 'done',
+      [inputMethodEngine.ENTER_KEY_TYPE_PREVIOUS]: 'previous',
+      [inputMethodEngine.ENTER_KEY_TYPE_NEWLINE]: 'newline',
+    }[type]
+    this.sendEvent({ type: 'ENTER_KEY_TYPE',  data: label })
   }
 
   private getCursor() {
@@ -80,13 +107,16 @@ export class KeyboardController {
   public handleKey(key: string, keyCode?: number): void {
     const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
     if (!this.processResult(res)) {
-      if (key) {
-        this.insertText(key)
-      } else {
-        switch (keyCode) {
-        case KeyCode.KEYCODE_DEL:
-          this.deleteForward(1)
-          break
+      switch (keyCode) { // Check code first as enter has to be handled differently, which has key \r.
+      case KeyCode.KEYCODE_DEL:
+        this.deleteForward(1)
+        break
+      case KeyCode.KEYCODE_ENTER:
+        this.textInputClient?.sendKeyFunction(this.attribute?.enterKeyType)
+        break
+      default:
+        if (key) {
+          this.insertText(key)
         }
       }
     }
@@ -135,8 +165,9 @@ export class KeyboardController {
       console.debug('inputStart')
       this.textInputClient = textInputClient;
       this.keyboardController = kbController;
-      const attribute = textInputClient.getEditorAttributeSync()
-      fcitx.focusIn(attribute.isTextPreviewSupported)
+      this.attribute = textInputClient.getEditorAttributeSync()
+      fcitx.focusIn(this.attribute.isTextPreviewSupported)
+      this.setEnterKeyType()
     })
     ability.on('inputStop', () => {
       console.debug('inputStop')
