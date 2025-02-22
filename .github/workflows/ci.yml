@@ -76,15 +76,6 @@ jobs:
           sudo apt install -y --no-install-recommends gettext
           ./scripts/install-deps.sh ${{ matrix.arch }}
 
-      - name: Filter ABI
-        run: |
-          if [[ ${{ matrix.arch }} == "arm64-v8a" ]]; then
-            sed -i '/x86_64/d' build-profile.json5
-          else
-            sed -i '/arm64-v8a/d' build-profile.json5
-          fi
-          cat build-profile.json5
-
       - name: Build HAP
         run: |
           git apply --directory=entry/src/main/cpp/fcitx5 patches/fcitx5.patch
@@ -95,8 +86,8 @@ jobs:
           # Build product
           hvigorw -v
           hvigorw clean --no-daemon
-          hvigorw assembleHap --mode module -p product=default --parallel --no-daemon
-          hvigorw assembleHap --mode module -p product=default --parallel --no-daemon # bundle generated resfile
+          hvigorw assembleHap --mode module -p product=default -p buildABI=${{ matrix.arch }} --parallel --no-daemon
+          hvigorw assembleHap --mode module -p product=default -p buildABI=${{ matrix.arch }} --parallel --no-daemon # bundle generated resfile
           mv entry/build/default/outputs/default/entry-default-unsigned.hap fcitx5-harmony-${{ matrix.arch }}.hap
 
       - name: Upload artifact
