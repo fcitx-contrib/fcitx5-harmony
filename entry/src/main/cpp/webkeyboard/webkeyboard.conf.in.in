@@ -1,0 +1,8 @@
+[Addon]
+Name=WebKeyboard
+Type=StaticLibrary
+Library=libwebkeyboard
+Category=UI
+Version=@PROJECT_VERSION@
+Configurable=True
+UIType=OnScreenKeyboard

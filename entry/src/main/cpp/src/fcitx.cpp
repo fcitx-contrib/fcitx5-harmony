@@ -60,6 +60,7 @@ void init(const std::string &bundle, const std::string &resfile) {
     StandardPath::global().syncUmask(); // Must happen after setupEnv.
 
     instance = std::make_unique<Instance>(0, nullptr);
+    instance->setInputMethodMode(fcitx::InputMethodMode::OnScreenKeyboard);
     auto &addonMgr = instance->addonManager();
     addonMgr.registerDefaultLoader(&getStaticAddon());
     instance->initialize();
