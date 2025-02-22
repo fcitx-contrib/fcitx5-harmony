@@ -58,6 +58,7 @@ add_subdirectory(fcitx5-chinese-addons)
 target_link_libraries(chttrans "-L${PREBUILT_USR}/lib" marisa)
 
 add_subdirectory(harmonyfrontend)
+add_subdirectory(webkeyboard)
 add_subdirectory(src)
 
 add_library(entry SHARED napi_init.cpp)
