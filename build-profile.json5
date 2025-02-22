@@ -12,12 +12,6 @@
             "caseSensitiveCheck": true,
             "useNormalizedOHMUrl": true
           },
-          "externalNativeOptions": {
-            "abiFilters": [
-              "arm64-v8a",
-              "x86_64"
-            ]
-          }
         }
       }
     ],
