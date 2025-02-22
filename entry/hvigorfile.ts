@@ -1,16 +1,16 @@
-import { hapTasks, OhosHapContext, OhosPluginId } from '@ohos/hvigor-ohos-plugin';
-import { getNode, hvigor } from '@ohos/hvigor';
+import { hapTasks, OhosHapContext, OhosPluginId } from '@ohos/hvigor-ohos-plugin'
+import { getNode, hvigor } from '@ohos/hvigor'
 
-const param = hvigor.getParameter();
-const buildAbiOverride = process.env['BUILD_ABI'] ?? param.getExtParam('buildABI');
+const param = hvigor.getParameter()
+const buildAbiOverride = process.env['BUILD_ABI'] ?? param.getExtParam('buildABI')
 const supportedAbis = ['arm64-v8a', 'x86_64']
 
-const rootNode = getNode(__filename);
+const rootNode = getNode(__filename)
 rootNode.afterNodeEvaluate(node => {
     const appContext = node.getContext(OhosPluginId.OHOS_HAP_PLUGIN) as OhosHapContext;
-    const buildProfileOpt = appContext.getBuildProfileOpt();
+    const buildProfileOpt = appContext.getBuildProfileOpt()
     buildProfileOpt['buildOption']['externalNativeOptions']['abiFilters'] =
-        buildAbiOverride?.split(',') ?? supportedAbis;
+        buildAbiOverride?.split(',') ?? supportedAbis
     appContext.setBuildProfileOpt(buildProfileOpt)
 })
 
