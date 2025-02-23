@@ -85,10 +85,7 @@ jobs:
 
           # Build product
           hvigorw -v
-          hvigorw clean --no-daemon
           hvigorw assembleHap --mode module -p product=default -p buildABI=${{ matrix.arch }} --parallel --no-daemon
-          rm -r entry/build/default/intermediates/res/default/resources/resfile # otherwise a second build will just use this cache
-          hvigorw assembleHap --mode module -p product=default -p buildABI=${{ matrix.arch }} --parallel --no-daemon # bundle generated resfile
           mv entry/build/default/outputs/default/entry-default-unsigned.hap fcitx5-harmony-${{ matrix.arch }}.hap
 
       - name: Upload artifact
