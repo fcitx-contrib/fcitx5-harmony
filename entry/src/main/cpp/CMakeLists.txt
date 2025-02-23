@@ -13,7 +13,7 @@ set(CMAKE_INSTALL_PREFIX "/usr")
 list(APPEND CMAKE_FIND_ROOT_PATH "${PREBUILT_USR}")
 
 if (CMAKE_HOST_WIN32)
-    set(PKG_CONFIG_EXECUTABLE "C:/msys64/usr/bin/pkg-config.exe")
+    set(PKG_CONFIG_EXECUTABLE "C:/msys64/usr/bin/pkg-config.exe" CACHE FILEPATH "" FORCE)
 endif()
 set(ENV{PKG_CONFIG_SYSROOT_DIR} "${PREBUILT_ROOT}")
 set(ENV{PKG_CONFIG_PATH} "${PREBUILT_USR}/lib/pkgconfig")

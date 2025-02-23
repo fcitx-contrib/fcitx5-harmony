@@ -1,6 +1,6 @@
 import { hapTasks, OhosHapContext, OhosPluginId } from '@ohos/hvigor-ohos-plugin'
 import { getNode, hvigor, HvigorNode } from '@ohos/hvigor'
-import { promises as fs } from 'fs';
+import { rmSync } from 'fs'
 
 const param = hvigor.getParameter()
 const buildAbiOverride = process.env['BUILD_ABI'] ?? param.getExtParam('buildABI')
@@ -8,25 +8,21 @@ const supportedAbis = ['arm64-v8a', 'x86_64']
 
 const rootNode = getNode(__filename)
 rootNode.afterNodeEvaluate(node => {
-    const hapContext = node.getContext(OhosPluginId.OHOS_HAP_PLUGIN) as OhosHapContext;
-    const buildProfileOpt = hapContext.getBuildProfileOpt();
+    const hapContext = node.getContext(OhosPluginId.OHOS_HAP_PLUGIN) as OhosHapContext
+    const buildProfileOpt = hapContext.getBuildProfileOpt()
     buildProfileOpt['buildOption']['externalNativeOptions']['abiFilters'] =
         buildAbiOverride?.split(',') ?? supportedAbis
     hapContext.setBuildProfileOpt(buildProfileOpt)
 
     registerCleanCxxTask(node)
-
-    registerLibsResourceBridgeTask(node);
+    registerLibsResourceBridgeTask(node)
 })
 
 function registerCleanCxxTask(node: HvigorNode) {
     node.registerTask({
         name: 'cleanCxxIntermediates',
         run() {
-            try {
-                fs.rm(node.nodeDir.file('.cxx').filePath, { recursive: true, force: true })
-            } catch (_) {
-            }
+            rmSync(node.nodeDir.file('.cxx').filePath, { recursive: true, force: true })
         },
         postDependencies: ['clean']
     })
