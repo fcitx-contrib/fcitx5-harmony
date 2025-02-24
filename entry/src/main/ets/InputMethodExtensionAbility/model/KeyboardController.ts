@@ -158,6 +158,13 @@ export class KeyboardController {
     this.registerInputListener();
     keyboardDelegate.on('keyDown', this.physicalKeyEventHandler.bind(this))
     keyboardDelegate.on('keyUp', this.physicalKeyEventHandler.bind(this))
+    keyboardDelegate.on('textChange', (text: string) => {
+      // Mainly for clicking x to clear all text including preedit,
+      // but harmless for pressing backspace till nothing left.
+      if (!text) {
+        fcitx.reset()
+      }
+    })
   }
 
   private registerInputListener(): void {
@@ -181,6 +188,7 @@ export class KeyboardController {
     });
     keyboardDelegate.off('keyDown')
     keyboardDelegate.off('keyUp')
+    keyboardDelegate.off('textChange')
   }
 }
 

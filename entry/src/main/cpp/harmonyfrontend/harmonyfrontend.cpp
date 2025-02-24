@@ -28,6 +28,8 @@ void HarmonyFrontend::focusIn(bool clientPreedit) {
 
 void HarmonyFrontend::focusOut() { ic_->focusOut(); }
 
+void HarmonyFrontend::reset() { ic_->reset(); }
+
 HarmonyInputContext::HarmonyInputContext(HarmonyFrontend *frontend, InputContextManager &inputContextManager)
     : InputContext(inputContextManager, ""), frontend_(frontend) {
     created();

@@ -84,6 +84,11 @@ API(focusOut) {
     return {};
 }
 
+API(reset) {
+    fcitx::reset();
+    return {};
+}
+
 API(processKey) {
     GET_ARGS(3)
     GET_U32(unicode, 0)
@@ -104,6 +109,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"init", nullptr, init, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusIn", nullptr, focusIn, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"reset", nullptr, reset, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"processKey", nullptr, processKey, nullptr, nullptr, nullptr, napi_default, nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

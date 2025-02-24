@@ -14,5 +14,6 @@ struct InputContextState {
 void init(const std::string &bundle, const std::string &resfile);
 void focusIn(bool clientPreedit);
 void focusOut();
+void reset();
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
 } // namespace fcitx
