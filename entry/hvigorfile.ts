@@ -22,7 +22,9 @@ function registerCleanCxxTask(node: HvigorNode) {
     node.registerTask({
         name: 'cleanCxxIntermediates',
         run() {
-            rmSync(node.nodeDir.file('.cxx').filePath, { recursive: true, force: true })
+            try {
+                rmSync(node.nodeDir.file('.cxx').filePath, { recursive: true, force: true })
+            } catch {}
         },
         postDependencies: ['clean']
     })
