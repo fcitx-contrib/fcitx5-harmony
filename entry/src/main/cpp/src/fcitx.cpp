@@ -79,6 +79,10 @@ void focusOut() {
     with_fcitx([] { frontend->focusOut(); });
 }
 
+void reset() {
+    with_fcitx([] { frontend->reset(); });
+}
+
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {
     return with_fcitx([unicode, keyCode, isRelease] {
         auto key = ohKeyToFcitxKey(unicode, keyCode);
