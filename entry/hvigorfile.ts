@@ -4,7 +4,10 @@ import { rmSync } from 'fs'
 
 const param = hvigor.getParameter()
 const buildAbiOverride = process.env['BUILD_ABI'] ?? param.getExtParam('buildABI')
-const supportedAbis = ['arm64-v8a', 'x86_64']
+const supportedAbis = [{
+  x64: 'x86_64',
+  arm64: 'arm64-v8a'
+}[process.arch]]
 
 const rootNode = getNode(__filename)
 rootNode.afterNodeEvaluate(node => {
