@@ -143,6 +143,13 @@ export class KeyboardController {
     };
     ability.createPanel(this.ctx, panelInfo).then((inputPanel: inputMethodEngine.Panel) => {
       this.panel = inputPanel;
+      this.panel.on('show', () => {
+        console.debug('show')
+      })
+      this.panel.on('hide', () => {
+        console.debug('hide')
+        this.sendEvent({ type: 'HIDE' })
+      })
       this.panel.resize(width, containerHeight)
       this.panel.setUiContent('InputMethodExtensionAbility/pages/VirtualKeyboard')
     })
@@ -177,6 +184,7 @@ export class KeyboardController {
       this.setEnterKeyType()
     })
     ability.on('inputStop', () => {
+      // This is not paired with inputStart. Only called when switching to Celia.
       console.debug('inputStop')
       fcitx.focusOut()
     });
@@ -189,6 +197,8 @@ export class KeyboardController {
     keyboardDelegate.off('keyDown')
     keyboardDelegate.off('keyUp')
     keyboardDelegate.off('textChange')
+    this?.panel.off('show')
+    this?.panel.off('hide')
   }
 }
 
