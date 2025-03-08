@@ -2,6 +2,10 @@
 
 #include <string>
 #include <cstdint>
+#include "napi/native_api.h"
+
+extern napi_threadsafe_function tsfn;
+void notify_main_async(std::string str);
 
 namespace fcitx {
 struct InputContextState {

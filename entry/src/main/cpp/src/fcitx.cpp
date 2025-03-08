@@ -23,6 +23,13 @@ namespace fs = std::filesystem;
 
 FCITX_DEFINE_STATIC_ADDON_REGISTRY(getStaticAddon)
 
+napi_threadsafe_function tsfn;
+
+void notify_main_async(std::string str) {
+    auto pStr = new std::string(std::move(str));
+    napi_call_threadsafe_function_with_priority(tsfn, pStr, napi_priority_high, true);
+}
+
 namespace fcitx {
 std::unique_ptr<Instance> instance;
 std::unique_ptr<fcitx::EventDispatcher> dispatcher;

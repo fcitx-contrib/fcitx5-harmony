@@ -34,7 +34,7 @@
 
 #define STRING(name, value)                                                                                            \
     napi_value name;                                                                                                   \
-    napi_create_string_utf8(env, value.c_str(), value.size(), &name);
+    napi_create_string_utf8(env, (value).c_str(), (value).size(), &name);
 
 #define BOOL(name, value)                                                                                              \
     napi_value name;                                                                                                   \
@@ -103,10 +103,34 @@ API(processKey) {
     return ret;
 }
 
+static void CallJs(napi_env env, napi_value jsCb, void *context, void *data) {
+    if (env == nullptr) {
+        return;
+    }
+    auto pStr = (std::string *)data;
+    napi_value undefined = nullptr;
+    napi_get_undefined(env, &undefined);
+    STRING(str, *pStr);
+    napi_value argv[1] = {str};
+    napi_call_function(env, undefined, jsCb, 1, argv, nullptr);
+    delete pStr;
+}
+
+API(setCallback) {
+    GET_ARGS(1)
+    std::string name = "callback";
+    STRING(name_, name)
+    // Bind args[0] and CallJs to tsfn, so that by calling tsfn on fcitx thread,
+    // CallJs will be called with args[0] on main thread.
+    napi_create_threadsafe_function(env, args[0], nullptr, name_, 0, 1, nullptr, nullptr, nullptr, CallJs, &tsfn);
+    return nullptr;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
         {"init", nullptr, init, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"setCallback", nullptr, setCallback, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusIn", nullptr, focusIn, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"reset", nullptr, reset, nullptr, nullptr, nullptr, napi_default, nullptr},

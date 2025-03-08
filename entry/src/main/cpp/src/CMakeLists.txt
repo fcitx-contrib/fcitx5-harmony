@@ -3,7 +3,7 @@ add_library(fcitx SHARED
     keycode.cpp
     inputmethod.cpp
 )
-target_link_libraries(fcitx Fcitx5::Core libhilog_ndk.z.so)
+target_link_libraries(fcitx Fcitx5::Core libhilog_ndk.z.so libace_napi.z.so)
 
 fcitx5_import_addons(fcitx
     REGISTRY_VARNAME getStaticAddon
