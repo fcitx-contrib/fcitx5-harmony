@@ -24,6 +24,9 @@ export class KeyboardController {
 
   public onCreate(context: InputMethodExtensionContext): void {
     console.debug("onCreate")
+    fcitx.setCallback((data: string) => {
+      this.processAsyncData(data)
+    })
     this.ctx = context;
     this.initWindow();
     this.registerListener();
@@ -46,6 +49,10 @@ export class KeyboardController {
 
   private sendEvent(event: SystemEvent) {
     this.port?.postMessageEvent(JSON.stringify(event))
+  }
+
+  private processAsyncData(data: string) {
+    console.log(`candidates ${data}`)
   }
 
   public setEnterKeyType() {

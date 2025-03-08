@@ -1,6 +1,7 @@
 #include <fcitx/inputpanel.h>
 #include <sstream>
 
+#include "../src/fcitx.h"
 #include "webkeyboard.h"
 
 
@@ -19,7 +20,7 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
         if (const auto &list = inputPanel.candidateList()) {
             int size = list->size();
             std::ostringstream oss;
-            oss << "candidates: [";
+            oss << "[";
             for (int i = 0; i < size; ++i) {
                 const auto &candidate = list->candidate(i);
                 const auto &text = instance_->outputFilter(inputContext, candidate.text());
@@ -28,7 +29,7 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
                     oss << ", ";
             }
             oss << "]";
-            FCITX_INFO() << oss.str();
+            notify_main_async(oss.str());
         }
         break;
     }
