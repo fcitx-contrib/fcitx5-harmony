@@ -4,8 +4,23 @@
 #include <fcitx/addoninstance.h>
 #include <fcitx/addonmanager.h>
 #include <fcitx/instance.h>
+#include <nlohmann/json.hpp>
+
+#include "utility.h"
+
+using json = nlohmann::json;
 
 namespace fcitx {
+
+struct Candidate {
+    std::string label;
+    std::string text;
+    std::string comment;
+
+    friend void to_json(json &j, const Candidate &c) {
+        j = json{{"label", escape_html(c.label)}, {"text", escape_html(c.text)}, {"comment", escape_html(c.comment)}};
+    }
+};
 
 class WebKeyboard final : public VirtualKeyboardUserInterface {
 public:
@@ -29,6 +44,8 @@ public:
 
 private:
     Instance *instance_;
+
+    void setCandidatesAsync(const std::vector<Candidate> &candidates);
 };
 
 class WebKeyboardFactory : public AddonFactory {

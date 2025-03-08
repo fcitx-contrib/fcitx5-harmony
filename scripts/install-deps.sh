@@ -5,6 +5,7 @@ deps=(
   curl
   ecm
   fmt
+  json
   lua
   libintl
   marisa
