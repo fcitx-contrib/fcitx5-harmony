@@ -1,5 +1,4 @@
 #include <fcitx/inputpanel.h>
-#include <sstream>
 
 #include "../src/fcitx.h"
 #include "webkeyboard.h"
@@ -19,17 +18,15 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
         const InputPanel &inputPanel = inputContext->inputPanel();
         if (const auto &list = inputPanel.candidateList()) {
             int size = list->size();
-            std::ostringstream oss;
-            oss << "[";
+            std::vector<Candidate> candidates;
+            candidates.reserve(size);
             for (int i = 0; i < size; ++i) {
+                const auto &label = stringutils::trim(list->label(i).toString());
                 const auto &candidate = list->candidate(i);
-                const auto &text = instance_->outputFilter(inputContext, candidate.text());
-                oss << text.toString();
-                if (i != (size - 1))
-                    oss << ", ";
+                candidates.push_back({label, instance_->outputFilter(inputContext, candidate.text()).toString(),
+                                      instance_->outputFilter(inputContext, candidate.comment()).toString()});
             }
-            oss << "]";
-            notify_main_async(oss.str());
+            setCandidateAsync(candidates);
         }
         break;
     }
@@ -37,6 +34,11 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
         // TODO
         break;
     }
+}
+
+void WebKeyboard::setCandidateAsync(const std::vector<Candidate> &candidates) {
+    auto j = json{{"type", "CANDIDATES"}, {"data", {{"candidates", candidates}}}};
+    notify_main_async(j.dump());
 }
 
 } // namespace fcitx
