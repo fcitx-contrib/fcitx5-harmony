@@ -6,6 +6,8 @@
 #include <fcitx/instance.h>
 #include <nlohmann/json.hpp>
 
+#include "utility.h"
+
 using json = nlohmann::json;
 
 namespace fcitx {
@@ -16,7 +18,7 @@ struct Candidate {
     std::string comment;
 
     friend void to_json(json &j, const Candidate &c) {
-        j = json{{"label", c.label}, {"text", c.text}, {"comment", c.comment}};
+        j = json{{"label", escape_html(c.label)}, {"text", escape_html(c.text)}, {"comment", escape_html(c.comment)}};
     }
 };
 
