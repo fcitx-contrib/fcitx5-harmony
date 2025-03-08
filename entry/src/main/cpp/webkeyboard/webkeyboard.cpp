@@ -26,7 +26,7 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
                 candidates.push_back({label, instance_->outputFilter(inputContext, candidate.text()).toString(),
                                       instance_->outputFilter(inputContext, candidate.comment()).toString()});
             }
-            setCandidateAsync(candidates);
+            setCandidatesAsync(candidates);
         }
         break;
     }
@@ -36,7 +36,7 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
     }
 }
 
-void WebKeyboard::setCandidateAsync(const std::vector<Candidate> &candidates) {
+void WebKeyboard::setCandidatesAsync(const std::vector<Candidate> &candidates) {
     auto j = json{{"type", "CANDIDATES"}, {"data", {{"candidates", candidates}}}};
     notify_main_async(j.dump());
 }
