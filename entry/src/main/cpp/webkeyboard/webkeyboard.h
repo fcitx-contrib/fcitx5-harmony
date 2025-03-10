@@ -45,7 +45,7 @@ public:
 private:
     Instance *instance_;
 
-    void setCandidatesAsync(const std::vector<Candidate> &candidates);
+    void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted);
 };
 
 class WebKeyboardFactory : public AddonFactory {
