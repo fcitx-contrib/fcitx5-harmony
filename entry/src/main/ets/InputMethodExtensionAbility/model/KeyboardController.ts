@@ -90,26 +90,34 @@ export class KeyboardController {
       return false
     }
     if (res.commit) {
-      if (this.preedit) {
-        this.textInputClient?.setPreviewTextSync('',
-          { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
-        this.textInputClient?.finishTextPreviewSync()
-      }
-      this.insertText(res.commit)
-      this.preedit = ''
-      this.preeditIndex = this.getCursor()
+      this.commitText(res.commit)
     }
+    this.updatePreviewText(res.preedit)
+    return true
+  }
+
+  public commitText(text: string) {
+    if (this.preedit) {
+      this.textInputClient?.setPreviewTextSync('',
+        { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
+      this.textInputClient?.finishTextPreviewSync()
+    }
+    this.insertText(text)
+    this.preedit = ''
+    this.preeditIndex = this.getCursor()
+  }
+
+  private updatePreviewText(text: string) {
     const start = this.preedit ? this.preeditIndex : this.getCursor()
     const end = start + this.preedit.length
-    if (this.preedit || res.preedit) {
-      this.textInputClient?.setPreviewTextSync(res.preedit, { start, end })
-      if (!res.preedit) {
+    if (this.preedit || text) {
+      this.textInputClient?.setPreviewTextSync(text, { start, end })
+      if (!text) {
         this.textInputClient?.finishTextPreviewSync()
       }
     }
-    this.preedit = res.preedit
+    this.preedit = text
     this.preeditIndex = start
-    return true
   }
 
   public handleKey(key: string, keyCode?: number): void {
@@ -127,6 +135,13 @@ export class KeyboardController {
           this.insertText(key)
         }
       }
+    }
+  }
+
+  public selectCandidate(index: number) {
+    const commit = fcitx.selectCandidate(index)
+    if (commit) {
+      this.commitText(commit)
     }
   }
 
