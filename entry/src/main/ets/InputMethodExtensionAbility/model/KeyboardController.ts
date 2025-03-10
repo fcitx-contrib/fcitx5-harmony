@@ -52,7 +52,8 @@ export class KeyboardController {
   }
 
   private processAsyncData(data: string) {
-    console.log(`candidates ${data}`)
+    const event = JSON.parse(data)
+    this.sendEvent(event)
   }
 
   public setEnterKeyType() {

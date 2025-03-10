@@ -15,10 +15,11 @@ void WebKeyboard::showVirtualKeyboard() {
 void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputContext) {
     switch (component) {
     case UserInterfaceComponent::InputPanel: {
+        int highlighted = -1;
+        std::vector<Candidate> candidates;
         const InputPanel &inputPanel = inputContext->inputPanel();
         if (const auto &list = inputPanel.candidateList()) {
             int size = list->size();
-            std::vector<Candidate> candidates;
             candidates.reserve(size);
             for (int i = 0; i < size; ++i) {
                 const auto &label = stringutils::trim(list->label(i).toString());
@@ -26,7 +27,11 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
                 candidates.push_back({label, instance_->outputFilter(inputContext, candidate.text()).toString(),
                                       instance_->outputFilter(inputContext, candidate.comment()).toString()});
             }
-            setCandidatesAsync(candidates);
+            highlighted = list->cursorIndex();
+        }
+        setCandidatesAsync(candidates, highlighted);
+        if (candidates.empty()) {
+            notify_main_async(R"JSON({"type":"CLEAR"})JSON");
         }
         break;
     }
@@ -36,8 +41,8 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
     }
 }
 
-void WebKeyboard::setCandidatesAsync(const std::vector<Candidate> &candidates) {
-    auto j = json{{"type", "CANDIDATES"}, {"data", {{"candidates", candidates}}}};
+void WebKeyboard::setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted) {
+    auto j = json{{"type", "CANDIDATES"}, {"data", {{"candidates", candidates}, {"highlighted", highlighted}}}};
     notify_main_async(j.dump());
 }
 
