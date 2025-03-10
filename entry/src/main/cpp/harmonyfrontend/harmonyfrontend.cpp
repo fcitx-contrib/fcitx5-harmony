@@ -17,6 +17,20 @@ InputContextState HarmonyFrontend::keyEvent(const Key &key, bool isRelease) {
     return ic_->popState(event.accepted());
 }
 
+std::string HarmonyFrontend::selectCandidate(int index) {
+    const auto &list = ic_->inputPanel().candidateList();
+    if (!list)
+        return "";
+    try {
+        // Engine is responsible for updating UI
+        list->candidate(index).select(ic_);
+        return ic_->popState(true).commit;
+    } catch (const std::invalid_argument &e) {
+        FCITX_ERROR() << "select candidate index out of range";
+        return "";
+    }
+}
+
 void HarmonyFrontend::focusIn(bool clientPreedit) {
     CapabilityFlags flags;
     if (clientPreedit) {

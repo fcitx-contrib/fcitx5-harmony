@@ -96,4 +96,8 @@ InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) 
         return frontend->keyEvent(key, isRelease);
     });
 }
+
+std::string selectCandidate(int index) {
+    return with_fcitx([index] { return frontend->selectCandidate(index); });
+}
 } // namespace fcitx

@@ -23,6 +23,7 @@ public:
 
     void createInputContext();
     InputContextState keyEvent(const Key &key, bool isRelease);
+    std::string selectCandidate(int index);
     void focusIn(bool clientPreedit);
     void focusOut();
     void reset();
