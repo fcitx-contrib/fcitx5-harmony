@@ -27,6 +27,9 @@ struct Index {
             case 'KEY_DOWN':
               keyboardController.handleKey(event.data.key, convertCode(event.data.code))
               break
+            case 'SELECT_CANDIDATE':
+              keyboardController.selectCandidate(event.data)
+              break
           }
         })
         this.controller.postMessage('__init_port__', [ports[0]], '*')

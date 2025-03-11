@@ -96,4 +96,19 @@ InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) 
         return frontend->keyEvent(key, isRelease);
     });
 }
+
+void selectCandidate(int index) {
+    with_fcitx([index] {
+        auto ic = instance->mostRecentInputContext();
+        const auto &list = ic->inputPanel().candidateList();
+        if (!list)
+            return;
+        try {
+            // Engine is responsible for updating UI
+            list->candidate(index).select(ic);
+        } catch (const std::invalid_argument &e) {
+            FCITX_ERROR() << "select candidate index out of range";
+        }
+    });
+}
 } // namespace fcitx

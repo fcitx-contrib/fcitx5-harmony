@@ -130,6 +130,10 @@ export class KeyboardController {
     }
   }
 
+  public selectCandidate(index: number) {
+    fcitx.selectCandidate(index)
+  }
+
   public insertText(text: string): void {
     this.textInputClient?.insertTextSync(text);
   }
