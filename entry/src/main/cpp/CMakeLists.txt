@@ -57,6 +57,7 @@ set(OPENCC_INCLUDE_DIR "${PREBUILT_USR}/include/opencc")
 add_subdirectory(fcitx5-chinese-addons)
 target_link_libraries(chttrans "-L${PREBUILT_USR}/lib" marisa)
 
+find_package(nlohmann_json)
 add_subdirectory(harmonyfrontend)
 add_subdirectory(webkeyboard)
 add_subdirectory(src)
