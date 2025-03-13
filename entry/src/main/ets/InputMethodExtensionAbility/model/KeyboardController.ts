@@ -5,6 +5,7 @@ import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
 import { SystemEvent } from '../../../fcitx5-keyboard-web/src/api'
 import fcitx from 'libentry.so';
+import { FcitxEvent } from './FcitxEvent';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
 const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
@@ -52,8 +53,21 @@ export class KeyboardController {
   }
 
   private processAsyncData(data: string) {
-    const event = JSON.parse(data)
-    this.sendEvent(event)
+    console.debug(`processing data: ${data}`)
+    const event = JSON.parse(data) as SystemEvent | FcitxEvent
+    switch (event.type) {
+      case 'COMMIT':
+        if (event.data) {
+          this.commitString(event.data)
+        }
+        break
+      case 'PREEDIT':
+        this.updatePreviewText(event.data.preedit)
+        break
+      default:
+        this.sendEvent(event)
+        break
+    }
   }
 
   public setEnterKeyType() {
@@ -85,30 +99,38 @@ export class KeyboardController {
     }
   }
 
+  private commitString(text: string): void {
+    if (this.preedit) {
+      this.textInputClient?.setPreviewTextSync('',
+        { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
+      this.textInputClient?.finishTextPreviewSync()
+    }
+    this.insertText(text)
+    this.preedit = ''
+    this.preeditIndex = this.getCursor()
+  }
+
+  private updatePreviewText(text: string) {
+    const start = this.preedit ? this.preeditIndex : this.getCursor()
+    const end = start + this.preedit.length
+    if (this.preedit || text) {
+      this.textInputClient?.setPreviewTextSync(text, { start, end })
+      if (!text) {
+        this.textInputClient?.finishTextPreviewSync()
+      }
+    }
+    this.preedit = text
+    this.preeditIndex = start
+  }
+
   private processResult(res: ReturnType<typeof fcitx.processKey>): boolean {
     if (!res.accepted) {
       return false
     }
     if (res.commit) {
-      if (this.preedit) {
-        this.textInputClient?.setPreviewTextSync('',
-          { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
-        this.textInputClient?.finishTextPreviewSync()
-      }
-      this.insertText(res.commit)
-      this.preedit = ''
-      this.preeditIndex = this.getCursor()
+      this.commitString(res.commit)
     }
-    const start = this.preedit ? this.preeditIndex : this.getCursor()
-    const end = start + this.preedit.length
-    if (this.preedit || res.preedit) {
-      this.textInputClient?.setPreviewTextSync(res.preedit, { start, end })
-      if (!res.preedit) {
-        this.textInputClient?.finishTextPreviewSync()
-      }
-    }
-    this.preedit = res.preedit
-    this.preeditIndex = start
+    this.updatePreviewText(res.preedit)
     return true
   }
 
@@ -128,6 +150,10 @@ export class KeyboardController {
         }
       }
     }
+  }
+
+  public selectCandidate(index: number) {
+    fcitx.selectCandidate(index)
   }
 
   public insertText(text: string): void {

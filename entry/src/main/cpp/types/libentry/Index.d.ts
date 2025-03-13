@@ -9,3 +9,4 @@ export const processKey: (unicode: number, keyCode: number, isRelease: boolean) 
   cursorPos: number
   accepted: boolean
 }
+export const selectCandidate: (index: number) => void

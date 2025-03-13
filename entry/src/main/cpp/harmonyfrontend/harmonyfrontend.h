@@ -50,8 +50,14 @@ public:
     void updatePreeditImpl() override;
     InputContextState popState(bool accepted);
 
+    bool isSyncEvent = false;
+    void commitStringAsync();
+    void updatePreeditAsync();
+
 private:
     HarmonyFrontend *frontend_;
     InputContextState state_;
+
+    inline Text filterText(const Text &orig) { return frontend_->instance()->outputFilter(this, orig); }
 };
 } // namespace fcitx
