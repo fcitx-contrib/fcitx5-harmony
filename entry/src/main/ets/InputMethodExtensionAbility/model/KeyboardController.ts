@@ -3,9 +3,10 @@ import { inputMethodEngine } from '@kit.IMEKit'
 import type { InputMethodExtensionContext } from '@kit.IMEKit'
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
-import { SystemEvent } from '../../../fcitx5-keyboard-web/src/api'
+import { SystemEvent, VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api'
 import fcitx from 'libentry.so';
 import { FcitxEvent } from './FcitxEvent';
+import { convertCode } from './keycode'
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
 const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
@@ -141,6 +142,18 @@ export class KeyboardController {
       case KeyCode.KEYCODE_DEL:
         this.deleteForward(1)
         break
+      case KeyCode.KEYCODE_DPAD_DOWN:
+        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_DOWN)
+        break
+      case KeyCode.KEYCODE_DPAD_LEFT:
+        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_LEFT)
+        break
+      case KeyCode.KEYCODE_DPAD_RIGHT:
+        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_RIGHT)
+        break
+      case KeyCode.KEYCODE_DPAD_UP:
+        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_UP)
+        break
       case KeyCode.KEYCODE_ENTER:
         this.textInputClient?.sendKeyFunction(this.attribute?.enterKeyType)
         break
@@ -152,8 +165,24 @@ export class KeyboardController {
     }
   }
 
-  public selectCandidate(index: number) {
-    fcitx.selectCandidate(index)
+  public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent) {
+    switch (event.type) {
+      case 'COPY':
+        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
+        break
+      case 'CUT':
+        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.CUT)
+        break
+      case 'KEY_DOWN':
+        this.handleKey(event.data.key, convertCode(event.data.code))
+        break
+      case 'PASTE':
+        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
+        break
+      case 'SELECT_CANDIDATE':
+        fcitx.selectCandidate(event.data)
+        break
+    }
   }
 
   public insertText(text: string): void {
