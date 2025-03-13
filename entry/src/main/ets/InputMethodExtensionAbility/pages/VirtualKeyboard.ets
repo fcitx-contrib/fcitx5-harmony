@@ -1,7 +1,6 @@
 import { webview } from '@kit.ArkWeb'
 import keyboardController from '../model/KeyboardController'
 import { VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api'
-import { convertCode } from './keycode'
 
 webview.once("webInited", () => {
   console.log("webInited")
@@ -23,14 +22,7 @@ struct Index {
         this.port = ports[1]
         this.port.onMessageEvent(msg => {
           const event = JSON.parse(msg as string) as VirtualKeyboardEvent
-          switch (event.type) {
-            case 'KEY_DOWN':
-              keyboardController.handleKey(event.data.key, convertCode(event.data.code))
-              break
-            case 'SELECT_CANDIDATE':
-              keyboardController.selectCandidate(event.data)
-              break
-          }
+          keyboardController.handleVirtualKeyboardEvent(event)
         })
         this.controller.postMessage('__init_port__', [ports[0]], '*')
         keyboardController.setPort(this.port)
