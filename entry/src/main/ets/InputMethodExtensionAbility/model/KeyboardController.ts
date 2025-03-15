@@ -7,6 +7,7 @@ import { SystemEvent, VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/
 import fcitx from 'libentry.so';
 import { FcitxEvent } from './FcitxEvent';
 import { convertCode } from './keycode'
+import { undo, redo, onTextChange, resetStacks } from './TextOperation'
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
 const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
@@ -20,6 +21,7 @@ export class KeyboardController {
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
   private preedit = ''
   private preeditIndex = 0
+  private textWithPreedit = ''
 
   constructor() {
   }
@@ -86,15 +88,22 @@ export class KeyboardController {
     this.sendEvent({ type: 'ENTER_KEY_TYPE',  data: label })
   }
 
-  private getCursor() {
+  private getTextBefore() {
     if (!this.textInputClient) {
-      return -1
+      return ''
+    }
+    return this.textInputClient.getForwardSync(this.textInputClient.getTextIndexAtCursorSync())
+  }
+
+  private getTextAfter() {
+    if (!this.textInputClient) {
+      return ''
     }
     let step = 1024
     while (true) {
-      const text = this.textInputClient.getForwardSync(step)
+      const text = this.textInputClient.getBackwardSync(step)
       if (text.length < step) {
-        return text.length
+        return text
       }
       step *= 2
     }
@@ -105,14 +114,19 @@ export class KeyboardController {
       this.textInputClient?.setPreviewTextSync('',
         { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
       this.textInputClient?.finishTextPreviewSync()
+      if (this.preedit === text) {
+        // System won't emit textChange, and the textChange for preedit was blocked.
+        // So we call onTextChange manually.
+        onTextChange(this.textWithPreedit)
+      }
     }
     this.insertText(text)
     this.preedit = ''
-    this.preeditIndex = this.getCursor()
+    this.preeditIndex = this.textInputClient?.getTextIndexAtCursorSync() ?? -1
   }
 
   private updatePreviewText(text: string) {
-    const start = this.preedit ? this.preeditIndex : this.getCursor()
+    const start = this.preedit ? this.preeditIndex : this.textInputClient?.getTextIndexAtCursorSync() ?? -1
     const end = start + this.preedit.length
     if (this.preedit || text) {
       this.textInputClient?.setPreviewTextSync(text, { start, end })
@@ -179,8 +193,14 @@ export class KeyboardController {
       case 'PASTE':
         this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
         break
+      case 'REDO':
+        redo(this.textInputClient!)
+        break
       case 'SELECT_CANDIDATE':
         fcitx.selectCandidate(event.data)
+        break
+      case 'UNDO':
+        undo(this.textInputClient!)
         break
     }
   }
@@ -229,6 +249,11 @@ export class KeyboardController {
     keyboardDelegate.on('keyDown', this.physicalKeyEventHandler.bind(this))
     keyboardDelegate.on('keyUp', this.physicalKeyEventHandler.bind(this))
     keyboardDelegate.on('textChange', (text: string) => {
+      this.textWithPreedit = text
+      // Block text changes with a preedit.
+      if (!this.preedit) {
+        onTextChange(text)
+      }
       // Mainly for clicking x to clear all text including preedit,
       // but harmless for pressing backspace till nothing left.
       if (!text) {
@@ -245,6 +270,7 @@ export class KeyboardController {
       this.attribute = textInputClient.getEditorAttributeSync()
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
       this.setEnterKeyType()
+      resetStacks(this.getTextBefore() + this.getTextAfter())
     })
     ability.on('inputStop', () => {
       // This is not paired with inputStart. Only called when switching to Celia.
