@@ -49,6 +49,13 @@ API(selectCandidate) {
     return {};
 }
 
+API(activateStatusAreaAction) {
+    GET_ARGS(1)
+    GET_I32(index, 0)
+    fcitx::activateStatusAreaAction(index);
+    return {};
+}
+
 static void CallJs(napi_env env, napi_value jsCb, void *context, void *data) {
     if (env == nullptr) {
         return;
@@ -81,7 +88,9 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"reset", nullptr, reset, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"processKey", nullptr, processKey, nullptr, nullptr, nullptr, napi_default, nullptr},
-        {"selectCandidate", nullptr, selectCandidate, nullptr, nullptr, nullptr, napi_default, nullptr}};
+        {"selectCandidate", nullptr, selectCandidate, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"activateStatusAreaAction", nullptr, activateStatusAreaAction, nullptr, nullptr, nullptr, napi_default,
+         nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;
 }

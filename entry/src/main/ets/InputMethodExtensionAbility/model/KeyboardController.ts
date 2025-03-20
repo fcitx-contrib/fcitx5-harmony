@@ -22,6 +22,7 @@ export class KeyboardController {
   private preedit = ''
   private preeditIndex = 0
   private textWithPreedit = ''
+  private pendingEvents: SystemEvent[] = []
 
   constructor() {
   }
@@ -49,10 +50,18 @@ export class KeyboardController {
 
   public setPort(port: webview.WebMessagePort) {
     this.port = port
+    for (const event of this.pendingEvents) {
+      this.sendEvent(event)
+    }
+    this.pendingEvents = []
   }
 
   private sendEvent(event: SystemEvent) {
-    this.port?.postMessageEvent(JSON.stringify(event))
+    if (this.port) {
+      this.port?.postMessageEvent(JSON.stringify(event))
+    } else {
+      this.pendingEvents.push(event)
+    }
   }
 
   private processAsyncData(data: string) {
@@ -182,26 +191,21 @@ export class KeyboardController {
   public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent) {
     switch (event.type) {
       case 'COPY':
-        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
-        break
+        return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
       case 'CUT':
-        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.CUT)
-        break
+        return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.CUT)
       case 'KEY_DOWN':
-        this.handleKey(event.data.key, convertCode(event.data.code))
-        break
+        return this.handleKey(event.data.key, convertCode(event.data.code))
       case 'PASTE':
-        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
-        break
+        return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
       case 'REDO':
-        redo(this.textInputClient!)
-        break
+        return redo(this.textInputClient!)
       case 'SELECT_CANDIDATE':
-        fcitx.selectCandidate(event.data)
-        break
+        return fcitx.selectCandidate(event.data)
+      case 'STATUS_AREA_ACTION':
+        return fcitx.activateStatusAreaAction(event.data)
       case 'UNDO':
-        undo(this.textInputClient!)
-        break
+        return undo(this.textInputClient!)
     }
   }
 

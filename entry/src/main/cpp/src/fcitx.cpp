@@ -2,8 +2,10 @@
 #include <fcitx-utils/event.h>
 #include <fcitx-utils/eventdispatcher.h>
 #include <fcitx-utils/standardpath.h>
+#include <fcitx/action.h>
 #include <fcitx/addonmanager.h>
 #include <fcitx/instance.h>
+#include <fcitx/userinterfacemanager.h>
 #include <thread>
 #include <sys/stat.h>
 #include <filesystem>
@@ -108,6 +110,15 @@ void selectCandidate(int index) {
             list->candidate(index).select(ic);
         } catch (const std::invalid_argument &e) {
             FCITX_ERROR() << "select candidate index out of range";
+        }
+    });
+}
+
+void activateStatusAreaAction(int id) {
+    with_fcitx([id] {
+        if (auto *ic = instance->mostRecentInputContext()) {
+            auto *action = instance->userInterfaceManager().lookupActionById(id);
+            action->activate(ic);
         }
     });
 }

@@ -1,4 +1,7 @@
+#include <fcitx/action.h>
 #include <fcitx/inputpanel.h>
+#include <fcitx/menu.h>
+#include <fcitx/statusarea.h>
 
 #include "../src/fcitx.h"
 #include "webkeyboard.h"
@@ -29,14 +32,15 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
             }
             highlighted = list->cursorIndex();
         }
-        setCandidatesAsync(candidates, highlighted);
         if (candidates.empty()) {
             notify_main_async(R"JSON({"type":"CLEAR"})JSON");
+        } else {
+            setCandidatesAsync(candidates, highlighted);
         }
         break;
     }
     case UserInterfaceComponent::StatusArea:
-        // TODO
+        updateStatusArea(inputContext);
         break;
     }
 }
@@ -46,6 +50,38 @@ void WebKeyboard::setCandidatesAsync(const std::vector<Candidate> &candidates, i
     notify_main_async(j.dump());
 }
 
+static nlohmann::json actionToJson(Action *action, InputContext *ic) {
+    nlohmann::json j;
+    j["id"] = action->id();
+    j["desc"] = action->shortText(ic);
+    j["icon"] = action->icon(ic);
+    if (action->isSeparator()) {
+        j["separator"] = true;
+    }
+    if (action->isCheckable()) {
+        bool checked = action->isChecked(ic);
+        j["checked"] = checked;
+    }
+    if (auto *menu = action->menu()) {
+        for (auto *subaction : menu->actions()) {
+            j["children"].emplace_back(actionToJson(subaction, ic));
+        }
+    }
+    return j;
+}
+
+void WebKeyboard::updateStatusArea(InputContext *ic) {
+    nlohmann::json j = nlohmann::json::array();
+    auto &statusArea = ic->statusArea();
+    for (auto *action : statusArea.allActions()) {
+        if (!action->id()) {
+            // Not registered with UI manager.
+            continue;
+        }
+        j.emplace_back(actionToJson(action, ic));
+    }
+    notify_main_async(json{{"type", "STATUS_AREA"}, {"data", j}}.dump());
+}
 } // namespace fcitx
 
 FCITX_ADDON_FACTORY_V2(webkeyboard, fcitx::WebKeyboardFactory)
