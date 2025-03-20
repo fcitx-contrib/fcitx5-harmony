@@ -10,3 +10,4 @@ export const processKey: (unicode: number, keyCode: number, isRelease: boolean) 
   accepted: boolean
 }
 export const selectCandidate: (index: number) => void
+export const activateStatusAreaAction: (index: number) => void

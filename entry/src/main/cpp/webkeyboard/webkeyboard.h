@@ -46,6 +46,7 @@ private:
     Instance *instance_;
 
     void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted);
+    void updateStatusArea(InputContext *ic);
 };
 
 class WebKeyboardFactory : public AddonFactory {

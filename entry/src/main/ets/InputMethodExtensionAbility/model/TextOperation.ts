@@ -18,6 +18,7 @@ const redoes: TextOperation[] = []
 let currentText: string
 let isUndoRedo = false
 const STACK_LIMIT = 1024
+const MERGE_TIMEOUT = 5000
 
 function clearArray(array: Array<any>) {
   array.splice(0, array.length)
@@ -88,7 +89,7 @@ export function onTextChange(text: string) {
     let merged = false
     if (undoes.length && !redoes.length) {
       const lastUndo = undoes[undoes.length - 1]
-      if (diff.time - lastUndo.time < 5000) {
+      if (diff.time - lastUndo.time < MERGE_TIMEOUT) {
         if (lastUndo.type === 'insert' && diff.type === 'insert') {
           if (lastUndo.start + lastUndo.text.length === diff.start) {
             // Continuous insert
@@ -115,7 +116,6 @@ export function onTextChange(text: string) {
         undoes.shift()
       }
     }
-    console.error(`${JSON.stringify(undoes)}}`)
   }
   currentText = text
   isUndoRedo = false
