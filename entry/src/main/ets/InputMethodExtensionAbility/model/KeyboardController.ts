@@ -190,6 +190,8 @@ export class KeyboardController {
 
   public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent) {
     switch (event.type) {
+      case 'COLLAPSE':
+        return this.panel?.hide()
       case 'COPY':
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
       case 'CUT':
@@ -274,7 +276,8 @@ export class KeyboardController {
       this.attribute = textInputClient.getEditorAttributeSync()
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
       this.setEnterKeyType()
-      resetStacks(this.getTextBefore() + this.getTextAfter())
+      // If we do it synchronously, getTextIndexAtCursorSync highly likely crashes.
+      setTimeout(() => resetStacks(this.getTextBefore() + this.getTextAfter()), 0)
     })
     ability.on('inputStop', () => {
       // This is not paired with inputStart. Only called when switching to Celia.
