@@ -119,26 +119,30 @@ export class KeyboardController {
   }
 
   private commitString(text: string): void {
-    if (this.preedit) {
-      this.textInputClient?.setPreviewTextSync('',
-        { start: this.preeditIndex, end: this.preeditIndex + this.preedit.length })
-      this.textInputClient?.finishTextPreviewSync()
-      if (this.preedit === text) {
-        // System won't emit textChange, and the textChange for preedit was blocked.
-        // So we call onTextChange manually.
-        onTextChange(this.textWithPreedit)
-      }
+    if (this.preedit === text) {
+      // System won't emit textChange, and the textChange for preedit was blocked.
+      // So we call onTextChange manually.
+      onTextChange(this.textWithPreedit)
     }
+    this.updatePreviewText('')
     this.insertText(text)
     this.preedit = ''
     this.preeditIndex = this.textInputClient?.getTextIndexAtCursorSync() ?? -1
   }
 
   private updatePreviewText(text: string) {
-    const start = this.preedit ? this.preeditIndex : this.textInputClient?.getTextIndexAtCursorSync() ?? -1
-    const end = start + this.preedit.length
+    let start = this.preedit ? this.preeditIndex : this.textInputClient!.getTextIndexAtCursorSync()
+    let end = start + this.preedit.length
     if (this.preedit || text) {
-      this.textInputClient?.setPreviewTextSync(text, { start, end })
+      try {
+        this.textInputClient?.setPreviewTextSync(text, { start, end })
+      } catch (e) {
+        // There is selection.
+        this.deleteForward(1)
+        start = this.textInputClient!.getTextIndexAtCursorSync()
+        end = start
+        this.textInputClient?.setPreviewTextSync(text, { start, end })
+      }
       if (!text) {
         this.textInputClient?.finishTextPreviewSync()
       }
@@ -254,6 +258,7 @@ export class KeyboardController {
     this.registerInputListener();
     keyboardDelegate.on('keyDown', this.physicalKeyEventHandler.bind(this))
     keyboardDelegate.on('keyUp', this.physicalKeyEventHandler.bind(this))
+    // This is not called on focus.
     keyboardDelegate.on('textChange', (text: string) => {
       this.textWithPreedit = text
       // Block text changes with a preedit.
@@ -265,6 +270,12 @@ export class KeyboardController {
       if (!text) {
         fcitx.reset()
       }
+    })
+    // This is called on focus. There is a bug on Harmony's side that makes it unreliable.
+    // Reproduce: having 是的, double click 是 to select, drag 📍 on the left to the right,
+    // then double click 的 to select. The last step won't update selection to 1,2.
+    keyboardDelegate.on('selectionChange', (oldBegin: number, oldEnd: number, newBegin: number, newEnd: number) => {
+      console.debug(`selectionChange ${oldBegin} ${oldEnd} ${newBegin} ${newEnd}`)
     })
   }
 
