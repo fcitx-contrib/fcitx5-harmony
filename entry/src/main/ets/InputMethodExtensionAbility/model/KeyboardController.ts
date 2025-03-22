@@ -22,6 +22,9 @@ export class KeyboardController {
   private preedit = ''
   private preeditIndex = 0
   private textWithPreedit = ''
+  private selectionStart = 0
+  private selectionEnd = 0
+  private selecting = false
   private pendingEvents: SystemEvent[] = []
 
   constructor() {
@@ -162,28 +165,62 @@ export class KeyboardController {
     return true
   }
 
+  private move(direction: inputMethodEngine.Direction) {
+    if (this.selecting) {
+      this.textInputClient?.selectByMovementSync({ direction })
+    } else {
+      this.textInputClient?.moveCursorSync(direction)
+    }
+  }
+
+  private moveWithinLine(destination: 'home' | 'end') {
+    const before = this.getTextBefore()
+    if (destination === 'home') {
+      const index = before.lastIndexOf('\n') + 1 // works for first line as well
+      if (this.selecting) {
+        this.textInputClient?.selectByRangeSync({ start: index, end: this.textInputClient.getTextIndexAtCursorSync() })
+      } else {
+        for (let i = before.length; i > index; --i) {
+          this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_LEFT)
+        }
+      }
+    } else {
+      const after = this.getTextAfter()
+      let offset = after.indexOf('\n')
+      if (offset === -1) { // last line
+        offset = after.length
+      }
+      if (this.selecting) {
+        this.textInputClient?.selectByRangeSync({ start: this.selectionStart, end: this.textInputClient.getTextIndexAtCursorSync() + offset })
+      } else {
+        for (let i = 0; i < offset; ++i) {
+          this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_RIGHT)
+        }
+      }
+    }
+  }
+
   public handleKey(key: string, keyCode?: number): void {
     const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
     if (!this.processResult(res)) {
       switch (keyCode) { // Check code first as enter has to be handled differently, which has key \r.
       case KeyCode.KEYCODE_DEL:
-        this.deleteForward(1)
-        break
+        return this.deleteForward(1)
       case KeyCode.KEYCODE_DPAD_DOWN:
-        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_DOWN)
-        break
+        return this.move(inputMethodEngine.Direction.CURSOR_DOWN)
       case KeyCode.KEYCODE_DPAD_LEFT:
-        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_LEFT)
-        break
+        return this.move(inputMethodEngine.Direction.CURSOR_LEFT)
       case KeyCode.KEYCODE_DPAD_RIGHT:
-        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_RIGHT)
-        break
+        return this.move(inputMethodEngine.Direction.CURSOR_RIGHT)
       case KeyCode.KEYCODE_DPAD_UP:
-        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_UP)
-        break
+        return this.move(inputMethodEngine.Direction.CURSOR_UP)
+      case KeyCode.KEYCODE_MOVE_END:
+        return this.moveWithinLine('end')
       case KeyCode.KEYCODE_ENTER:
         this.textInputClient?.sendKeyFunction(this.attribute?.enterKeyType)
         break
+      case KeyCode.KEYCODE_MOVE_HOME:
+        return this.moveWithinLine('home')
       default:
         if (key) {
           this.insertText(key)
@@ -276,6 +313,10 @@ export class KeyboardController {
     // then double click 的 to select. The last step won't update selection to 1,2.
     keyboardDelegate.on('selectionChange', (oldBegin: number, oldEnd: number, newBegin: number, newEnd: number) => {
       console.debug(`selectionChange ${oldBegin} ${oldEnd} ${newBegin} ${newEnd}`)
+      this.selectionStart = newBegin
+      this.selectionEnd = newEnd
+      // Because selectByMovementSync won't call this, doing below won't interrupt selection when start and end overlap.
+      this.selecting = this.selectionStart !== this.selectionEnd
     })
   }
 
