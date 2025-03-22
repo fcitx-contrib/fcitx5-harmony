@@ -61,9 +61,9 @@
         "description": "inputMethod",
         "name": "InputMethodExtensionAbility",
         "icon": "$media:app_icon",
-        "srcEntry": "./ets/InputMethodExtensionAbility/FcitxInputMethodService.ts",
+        "srcEntry": "./ets/InputMethodExtensionAbility/FcitxInputMethodService.ets",
         "type": "inputMethod",
-        "exported": true,
+        "exported": true
       }
     ]
   }
