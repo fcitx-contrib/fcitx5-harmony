@@ -1,17 +1,25 @@
 import { inputMethodEngine } from '@kit.IMEKit'
 
-type TextOperation = ({
-  type: 'insert'
-} | {
-  type: 'delete'
-} | {
-  type: 'replace'
-  oldText: string
-}) & {
+interface OperationAddition {
   start: number
   text: string
   time: number
 }
+
+interface InsertOperation extends OperationAddition {
+  type: 'insert'
+}
+
+interface DeleteOperation extends OperationAddition {
+  type: 'delete'
+}
+
+interface ReplaceOperation extends OperationAddition {
+  type: 'replace'
+  oldText: string
+}
+
+type TextOperation = InsertOperation | DeleteOperation | ReplaceOperation
 
 const undoes: TextOperation[] = []
 const redoes: TextOperation[] = []
@@ -20,7 +28,7 @@ let isUndoRedo = false
 const STACK_LIMIT = 1024
 const MERGE_TIMEOUT = 5000
 
-function clearArray(array: Array<any>) {
+function clearArray(array: Array<TextOperation>) {
   array.splice(0, array.length)
 }
 
@@ -126,15 +134,15 @@ export function undo(client: inputMethodEngine.InputClient) {
   if (lastUndo) {
     isUndoRedo = true
     switch (lastUndo.type) {
-    case 'insert':
-      replace(client, lastUndo.start, lastUndo.start + lastUndo.text.length, '')
-      break
-    case 'delete':
-      replace(client, lastUndo.start, lastUndo.start, lastUndo.text)
-      break
-    case 'replace':
-      replace(client, lastUndo.start, lastUndo.start + lastUndo.text.length, lastUndo.oldText)
-      break
+      case 'insert':
+        replace(client, lastUndo.start, lastUndo.start + lastUndo.text.length, '')
+        break
+      case 'delete':
+        replace(client, lastUndo.start, lastUndo.start, lastUndo.text)
+        break
+      case 'replace':
+        replace(client, lastUndo.start, lastUndo.start + lastUndo.text.length, lastUndo.oldText)
+        break
     }
     redoes.push(lastUndo)
   }
@@ -144,16 +152,16 @@ export function redo(client: inputMethodEngine.InputClient) {
   const lastRedo = redoes.pop()
   if (lastRedo) {
     isUndoRedo = true
-    switch(lastRedo.type) {
-    case 'insert':
-      replace(client, lastRedo.start, lastRedo.start, lastRedo.text)
-      break
-    case 'delete':
-      replace(client, lastRedo.start, lastRedo.start + lastRedo.text.length, '')
-      break
-    case 'replace':
-      replace(client, lastRedo.start, lastRedo.start + lastRedo.oldText.length, lastRedo.text)
-      break
+    switch (lastRedo.type) {
+      case 'insert':
+        replace(client, lastRedo.start, lastRedo.start, lastRedo.text)
+        break
+      case 'delete':
+        replace(client, lastRedo.start, lastRedo.start + lastRedo.text.length, '')
+        break
+      case 'replace':
+        replace(client, lastRedo.start, lastRedo.start + lastRedo.oldText.length, lastRedo.text)
+        break
     }
     undoes.push(lastRedo)
   }
