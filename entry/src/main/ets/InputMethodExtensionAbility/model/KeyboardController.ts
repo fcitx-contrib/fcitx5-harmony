@@ -200,6 +200,17 @@ export class KeyboardController {
     }
   }
 
+  private setCursor(index: number) {
+    if (index) {
+      // 2 steps so that 📍 won't be shown.
+      this.textInputClient?.selectByRangeSync({ start: index - 1, end: index - 1 })
+      this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_RIGHT)
+    } else {
+      this.textInputClient?.selectByRangeSync({ start: 0, end: 0 })
+      this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_LEFT)
+    }
+  }
+
   public handleKey(key: string, keyCode?: number): void {
     const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
     if (!this.processResult(res)) {
@@ -237,12 +248,23 @@ export class KeyboardController {
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
       case 'CUT':
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.CUT)
+      case 'DESELECT':
+        this.selecting = false
+        this.setCursor(this.textInputClient?.getTextIndexAtCursorSync() ?? 0)
+        break
       case 'KEY_DOWN':
         return this.handleKey(event.data.key, convertCode(event.data.code))
       case 'PASTE':
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
       case 'REDO':
         return redo(this.textInputClient!)
+      case 'SELECT':
+        this.selecting = true
+        break
+      case 'SELECT_ALL':
+        this.selecting = true
+        this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.SELECT_ALL)
+        break
       case 'SELECT_CANDIDATE':
         return fcitx.selectCandidate(event.data)
       case 'STATUS_AREA_ACTION':
@@ -317,6 +339,7 @@ export class KeyboardController {
       this.selectionEnd = newEnd
       // Because selectByMovementSync won't call this, doing below won't interrupt selection when start and end overlap.
       this.selecting = this.selectionStart !== this.selectionEnd
+      this.sendEvent({ type: this.selecting? 'SELECT' : 'DESELECT' })
     })
   }
 
