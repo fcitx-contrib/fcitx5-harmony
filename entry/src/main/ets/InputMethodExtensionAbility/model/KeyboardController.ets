@@ -1,13 +1,13 @@
-import { webview } from '@kit.ArkWeb'
-import { inputMethodEngine } from '@kit.IMEKit'
-import type { InputMethodExtensionContext } from '@kit.IMEKit'
+import { webview } from '@kit.ArkWeb';
+import type { InputMethodExtensionContext } from '@kit.IMEKit';
+import { inputMethodEngine } from '@kit.IMEKit';
 import { display } from '@kit.ArkUI';
 import { KeyCode } from '@kit.InputKit';
-import { SystemEvent, VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api'
-import fcitx from 'libentry.so';
+import { SystemEvent, VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api';
+import fcitx, { InputContextState } from 'libentry.so';
 import { FcitxEvent } from './FcitxEvent';
-import { convertCode } from './keycode'
-import { undo, redo, onTextChange, resetStacks } from './TextOperation'
+import { convertCode } from './keycode';
+import { onTextChange, redo, resetStacks, undo } from './TextOperation';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
 const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
@@ -85,19 +85,21 @@ export class KeyboardController {
     }
   }
 
+  private enterKeyLabelMapping: Map<number, string> = new Map([
+    [inputMethodEngine.ENTER_KEY_TYPE_UNSPECIFIED, ''],
+    [inputMethodEngine.ENTER_KEY_TYPE_GO, 'go'],
+    [inputMethodEngine.ENTER_KEY_TYPE_SEARCH, 'search'],
+    [inputMethodEngine.ENTER_KEY_TYPE_SEND, 'send'],
+    [inputMethodEngine.ENTER_KEY_TYPE_NEXT, 'next'],
+    [inputMethodEngine.ENTER_KEY_TYPE_DONE, 'done'],
+    [inputMethodEngine.ENTER_KEY_TYPE_PREVIOUS, 'previous'],
+    [inputMethodEngine.ENTER_KEY_TYPE_NEWLINE, 'newline'],
+  ])
+
   public setEnterKeyType() {
     const type = this.attribute?.enterKeyType ?? 0
-    const label = {
-      [inputMethodEngine.ENTER_KEY_TYPE_UNSPECIFIED]: '',
-      [inputMethodEngine.ENTER_KEY_TYPE_GO]: 'go',
-      [inputMethodEngine.ENTER_KEY_TYPE_SEARCH]: 'search',
-      [inputMethodEngine.ENTER_KEY_TYPE_SEND]: 'send',
-      [inputMethodEngine.ENTER_KEY_TYPE_NEXT]: 'next',
-      [inputMethodEngine.ENTER_KEY_TYPE_DONE]: 'done',
-      [inputMethodEngine.ENTER_KEY_TYPE_PREVIOUS]: 'previous',
-      [inputMethodEngine.ENTER_KEY_TYPE_NEWLINE]: 'newline',
-    }[type]
-    this.sendEvent({ type: 'ENTER_KEY_TYPE',  data: label })
+    const label: string = this.enterKeyLabelMapping[type]
+    this.sendEvent({ type: 'ENTER_KEY_TYPE', data: label })
   }
 
   private getTextBefore() {
@@ -154,7 +156,7 @@ export class KeyboardController {
     this.preeditIndex = start
   }
 
-  private processResult(res: ReturnType<typeof fcitx.processKey>): boolean {
+  private processResult(res: InputContextState): boolean {
     if (!res.accepted) {
       return false
     }
@@ -191,7 +193,10 @@ export class KeyboardController {
         offset = after.length
       }
       if (this.selecting) {
-        this.textInputClient?.selectByRangeSync({ start: this.selectionStart, end: this.textInputClient.getTextIndexAtCursorSync() + offset })
+        this.textInputClient?.selectByRangeSync({
+          start: this.selectionStart,
+          end: this.textInputClient.getTextIndexAtCursorSync() + offset
+        })
       } else {
         for (let i = 0; i < offset; ++i) {
           this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_RIGHT)
@@ -215,32 +220,32 @@ export class KeyboardController {
     const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
     if (!this.processResult(res)) {
       switch (keyCode) { // Check code first as enter has to be handled differently, which has key \r.
-      case KeyCode.KEYCODE_DEL:
-        return this.deleteForward(1)
-      case KeyCode.KEYCODE_DPAD_DOWN:
-        return this.move(inputMethodEngine.Direction.CURSOR_DOWN)
-      case KeyCode.KEYCODE_DPAD_LEFT:
-        return this.move(inputMethodEngine.Direction.CURSOR_LEFT)
-      case KeyCode.KEYCODE_DPAD_RIGHT:
-        return this.move(inputMethodEngine.Direction.CURSOR_RIGHT)
-      case KeyCode.KEYCODE_DPAD_UP:
-        return this.move(inputMethodEngine.Direction.CURSOR_UP)
-      case KeyCode.KEYCODE_MOVE_END:
-        return this.moveWithinLine('end')
-      case KeyCode.KEYCODE_ENTER:
-        this.textInputClient?.sendKeyFunction(this.attribute?.enterKeyType)
-        break
-      case KeyCode.KEYCODE_MOVE_HOME:
-        return this.moveWithinLine('home')
-      default:
-        if (key) {
-          this.insertText(key)
-        }
+        case KeyCode.KEYCODE_DEL:
+          return this.deleteForward(1)
+        case KeyCode.KEYCODE_DPAD_DOWN:
+          return this.move(inputMethodEngine.Direction.CURSOR_DOWN)
+        case KeyCode.KEYCODE_DPAD_LEFT:
+          return this.move(inputMethodEngine.Direction.CURSOR_LEFT)
+        case KeyCode.KEYCODE_DPAD_RIGHT:
+          return this.move(inputMethodEngine.Direction.CURSOR_RIGHT)
+        case KeyCode.KEYCODE_DPAD_UP:
+          return this.move(inputMethodEngine.Direction.CURSOR_UP)
+        case KeyCode.KEYCODE_MOVE_END:
+          return this.moveWithinLine('end')
+        case KeyCode.KEYCODE_ENTER:
+          this.textInputClient?.sendKeyFunction(this.attribute?.enterKeyType)
+          break
+        case KeyCode.KEYCODE_MOVE_HOME:
+          return this.moveWithinLine('home')
+        default:
+          if (key) {
+            this.insertText(key)
+          }
       }
     }
   }
 
-  public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent) {
+  public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent): void | Promise<void> {
     switch (event.type) {
       case 'COLLAPSE':
         return this.panel?.hide()
@@ -287,7 +292,9 @@ export class KeyboardController {
       return;
     }
     // 1260x2720 on emulator
-    const { width, height } = display.getDefaultDisplaySync()
+    const defaultDisplay = display.getDefaultDisplaySync()
+    const width = defaultDisplay.width
+    const height = defaultDisplay.height
     let containerHeight = Math.min(width / 3 * 2, height / 3) // Same with xiaoyi on emulator
     let panelInfo: inputMethodEngine.PanelInfo = {
       type: inputMethodEngine.PanelType.SOFT_KEYBOARD,
@@ -315,8 +322,8 @@ export class KeyboardController {
 
   private registerListener(): void {
     this.registerInputListener();
-    keyboardDelegate.on('keyDown', this.physicalKeyEventHandler.bind(this))
-    keyboardDelegate.on('keyUp', this.physicalKeyEventHandler.bind(this))
+    keyboardDelegate.on('keyDown', (e) => { return this.physicalKeyEventHandler(e) })
+    keyboardDelegate.on('keyUp', (e) => { return this.physicalKeyEventHandler(e) })
     // This is not called on focus.
     keyboardDelegate.on('textChange', (text: string) => {
       this.textWithPreedit = text
@@ -352,7 +359,7 @@ export class KeyboardController {
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
       this.setEnterKeyType()
       // If we do it synchronously, getTextIndexAtCursorSync highly likely crashes.
-      setTimeout(() => resetStacks(this.getTextBefore() + this.getTextAfter()), 0)
+      setTimeout((): void => resetStacks(this.getTextBefore() + this.getTextAfter()), 0)
     })
     ability.on('inputStop', () => {
       // This is not paired with inputStart. Only called when switching to Celia.
@@ -368,8 +375,8 @@ export class KeyboardController {
     keyboardDelegate.off('keyDown')
     keyboardDelegate.off('keyUp')
     keyboardDelegate.off('textChange')
-    this?.panel.off('show')
-    this?.panel.off('hide')
+    this.panel?.off('show')
+    this.panel?.off('hide')
   }
 }
 
