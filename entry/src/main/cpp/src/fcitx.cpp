@@ -88,8 +88,8 @@ void focusOut() {
     with_fcitx([] { frontend->focusOut(); });
 }
 
-void reset() {
-    with_fcitx([] { frontend->reset(); });
+InputContextState reset() {
+    return with_fcitx([] { return frontend->reset(); });
 }
 
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {

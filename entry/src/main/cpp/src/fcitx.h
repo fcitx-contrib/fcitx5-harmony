@@ -18,7 +18,7 @@ struct InputContextState {
 void init(const std::string &bundle, const std::string &resfile);
 void focusIn(bool clientPreedit);
 void focusOut();
-void reset();
+InputContextState reset();
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
 void selectCandidate(int index);
 void activateStatusAreaAction(int id);
