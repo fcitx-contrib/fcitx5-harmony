@@ -33,7 +33,11 @@ void HarmonyFrontend::focusIn(bool clientPreedit) {
 
 void HarmonyFrontend::focusOut() { ic_->focusOut(); }
 
-void HarmonyFrontend::reset() { ic_->reset(); }
+InputContextState HarmonyFrontend::reset() {
+    ic_->isSyncEvent = true;
+    ic_->reset();
+    return ic_->popState(true);
+}
 
 HarmonyInputContext::HarmonyInputContext(HarmonyFrontend *frontend, InputContextManager &inputContextManager)
     : InputContext(inputContextManager, ""), frontend_(frontend) {

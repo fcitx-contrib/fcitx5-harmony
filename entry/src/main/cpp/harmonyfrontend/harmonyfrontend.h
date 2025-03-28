@@ -25,7 +25,7 @@ public:
     InputContextState keyEvent(const Key &key, bool isRelease);
     void focusIn(bool clientPreedit);
     void focusOut();
-    void reset();
+    InputContextState reset();
 
 private:
     Instance *instance_;

@@ -249,6 +249,9 @@ export class KeyboardController {
     switch (event.type) {
       case 'COLLAPSE':
         return this.panel?.hide()
+      case 'COMMIT':
+        this.processResult(fcitx.reset())
+        return this.insertText(event.data)
       case 'COPY':
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.COPY)
       case 'CUT':

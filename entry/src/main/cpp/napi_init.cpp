@@ -24,8 +24,13 @@ API(focusOut) {
 }
 
 API(reset) {
-    fcitx::reset();
-    return {};
+    auto state = fcitx::reset();
+    OBJECT(ret)
+    SET(ret, "commit", state.commit)
+    SET(ret, "preedit", state.preedit)
+    SET(ret, "cursorPos", state.cursorPos)
+    SET(ret, "accepted", state.accepted)
+    return ret;
 }
 
 API(processKey) {
