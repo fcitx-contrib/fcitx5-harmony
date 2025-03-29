@@ -15,6 +15,10 @@
     {
       "name": "INTERNET_reason",
       "value": "Used in Cloud Pinyin."
+    },
+    {
+      "name": "READ_PASTEBOARD_reason",
+      "value": "Used for autofill and pasteboard history."
     }
   ]
 }
