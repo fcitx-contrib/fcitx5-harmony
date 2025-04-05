@@ -1,4 +1,5 @@
 import { inputMethodEngine } from '@kit.IMEKit'
+import keyboardController from './KeyboardController'
 
 interface OperationAddition {
   start: number
@@ -36,6 +37,8 @@ export function resetStacks(text: string) {
   currentText = text
   clearArray(undoes)
   clearArray(redoes)
+  keyboardController.setUndo(false)
+  keyboardController.setRedo(false)
 }
 
 function replace(client: inputMethodEngine.InputClient, start: number, end: number, text: string) {
@@ -124,6 +127,8 @@ export function onTextChange(text: string) {
         undoes.shift()
       }
     }
+    keyboardController.setUndo(true)
+    keyboardController.setRedo(false)
   }
   currentText = text
   isUndoRedo = false
@@ -145,6 +150,10 @@ export function undo(client: inputMethodEngine.InputClient) {
         break
     }
     redoes.push(lastUndo)
+    if (!undoes.length) {
+      keyboardController.setUndo(false)
+    }
+    keyboardController.setRedo(true)
   }
 }
 
@@ -164,5 +173,9 @@ export function redo(client: inputMethodEngine.InputClient) {
         break
     }
     undoes.push(lastRedo)
+    keyboardController.setUndo(true)
+    if (!redoes.length) {
+      keyboardController.setRedo(false)
+    }
   }
 }

@@ -102,6 +102,14 @@ export class KeyboardController {
     this.sendEvent({ type: 'ENTER_KEY_TYPE', data: label })
   }
 
+  public setUndo(enabled: boolean) {
+    this.sendEvent({ type: 'UNDO', data: enabled })
+  }
+
+  public setRedo(enabled: boolean) {
+    this.sendEvent({ type: 'REDO', data: enabled })
+  }
+
   private getTextBefore() {
     if (!this.textInputClient) {
       return ''
