@@ -1,4 +1,5 @@
 #include <fcitx/instance.h>
+#include <fcitx/inputmethodentry.h>
 #include <fcitx/inputmethodmanager.h>
 #include "inputmethod.h"
 
@@ -14,5 +15,28 @@ void setInputMethods(const std::vector<std::string> &inputMethods) {
     }
     imMgr.setGroup(group);
     imMgr.save();
+}
+
+static nlohmann::json imToJson(const InputMethodEntry *entry) {
+    nlohmann::json j;
+    j["name"] = entry->uniqueName();
+    j["displayName"] = entry->nativeName() != "" ? entry->nativeName()
+                       : entry->name() != ""     ? entry->name()
+                                                 : entry->uniqueName();
+    j["languageCode"] = entry->languageCode();
+    return j;
+}
+
+nlohmann::json getInputMethodsJson() {
+    auto j = nlohmann::json::array();
+    auto &imMgr = instance->inputMethodManager();
+    auto group = imMgr.currentGroup();
+    for (const auto &im : group.inputMethodList()) {
+        auto entry = imMgr.entry(im.name());
+        if (!entry)
+            continue;
+        j.push_back(imToJson(entry));
+    }
+    return j;
 }
 } // namespace fcitx

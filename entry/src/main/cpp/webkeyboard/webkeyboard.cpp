@@ -4,6 +4,7 @@
 #include <fcitx/statusarea.h>
 
 #include "../src/fcitx.h"
+#include "../src/inputmethod.h"
 #include "webkeyboard.h"
 
 
@@ -71,16 +72,21 @@ static nlohmann::json actionToJson(Action *action, InputContext *ic) {
 }
 
 void WebKeyboard::updateStatusArea(InputContext *ic) {
-    nlohmann::json j = nlohmann::json::array();
+    nlohmann::json actions = nlohmann::json::array();
     auto &statusArea = ic->statusArea();
     for (auto *action : statusArea.allActions()) {
         if (!action->id()) {
             // Not registered with UI manager.
             continue;
         }
-        j.emplace_back(actionToJson(action, ic));
+        actions.emplace_back(actionToJson(action, ic));
     }
-    notify_main_async(json{{"type", "STATUS_AREA"}, {"data", j}}.dump());
+    notify_main_async(json{{"type", "STATUS_AREA"},
+                           {"data",
+                            {{"actions", actions},
+                             {"currentInputMethod", instance_->currentInputMethod()},
+                             {"inputMethods", getInputMethodsJson()}}}}
+                          .dump());
 }
 } // namespace fcitx
 
