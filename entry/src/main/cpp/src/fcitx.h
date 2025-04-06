@@ -21,5 +21,7 @@ void focusOut();
 InputContextState reset();
 InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
 void selectCandidate(int index);
+void askCandidateAction(int index);
+void activateCandidateAction(int index, int id);
 void activateStatusAreaAction(int id);
 } // namespace fcitx
