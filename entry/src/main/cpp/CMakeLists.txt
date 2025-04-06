@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(fcitx5-harmony VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+add_definitions(-fexperimental-library) # TODO: check if clang 16+ needs it.
 
 set(PREBUILT_ROOT "${PROJECT_SOURCE_DIR}/prebuilt/${OHOS_ARCH}")
 set(PREBUILT_USR "${PREBUILT_ROOT}/usr")
@@ -43,6 +44,7 @@ option(ENABLE_EMOJI "" OFF)
 option(ENABLE_LIBUUID "" OFF)
 option(BUILD_SPELL_DICT "" OFF)
 add_subdirectory(fcitx5)
+target_link_libraries(Fcitx5Utils PRIVATE c++experimental) # TODO: check if clang 16+ needs it.
 
 option(ENABLE_DATA "" OFF)
 option(ENABLE_TOOLS "" OFF)
