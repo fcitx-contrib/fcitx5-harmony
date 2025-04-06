@@ -4,7 +4,6 @@ deps=(
   boost
   curl
   ecm
-  fmt
   json
   lua
   libintl
