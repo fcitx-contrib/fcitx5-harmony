@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 1538d9eb..d66cf273 100644
+index 29536ffc..5c98d97b 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -238,7 +238,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
+@@ -228,7 +228,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
  include_directories(${CMAKE_CURRENT_BINARY_DIR})
  
  add_subdirectory(src)
@@ -25,10 +25,10 @@ index b2f37acd..0cf72d7c 100644
    )
  target_include_directories(Fcitx5Config PUBLIC
 diff --git a/src/lib/fcitx-utils/CMakeLists.txt b/src/lib/fcitx-utils/CMakeLists.txt
-index 2db6fb3b..9cce85d2 100644
+index d2498649..b88dc5f9 100644
 --- a/src/lib/fcitx-utils/CMakeLists.txt
 +++ b/src/lib/fcitx-utils/CMakeLists.txt
-@@ -125,8 +125,7 @@ ecm_setup_version(PROJECT
+@@ -124,8 +124,7 @@ ecm_setup_version(PROJECT
  
  add_library(Fcitx5Utils ${FCITX_UTILS_SOURCES})
  set_target_properties(Fcitx5Utils
@@ -38,8 +38,28 @@ index 2db6fb3b..9cce85d2 100644
    EXPORT_NAME Utils
    )
  target_include_directories(Fcitx5Utils PUBLIC
+diff --git a/src/lib/fcitx-utils/log.cpp b/src/lib/fcitx-utils/log.cpp
+index 6e9d18ab..00964e3a 100644
+--- a/src/lib/fcitx-utils/log.cpp
++++ b/src/lib/fcitx-utils/log.cpp
+@@ -213,6 +213,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
+         break;
+     }
+ 
++#if 0
+     if (globalLogConfig.showTimeDate) {
+         try {
+             auto now = std::chrono::time_point_cast<std::chrono::microseconds>(
+@@ -229,6 +230,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
+         } catch (...) {
+         }
+     }
++#endif
+ 
+     out_ << filename << ":" << lineNumber << "] ";
+ }
 diff --git a/src/lib/fcitx/CMakeLists.txt b/src/lib/fcitx/CMakeLists.txt
-index 927d1676..1a40ecea 100644
+index 56fe5190..f154b8d3 100644
 --- a/src/lib/fcitx/CMakeLists.txt
 +++ b/src/lib/fcitx/CMakeLists.txt
 @@ -67,8 +67,7 @@ ecm_setup_version(PROJECT
