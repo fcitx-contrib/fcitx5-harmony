@@ -22,6 +22,7 @@
 #endif
 
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 FCITX_DEFINE_STATIC_ADDON_REGISTRY(getStaticAddon)
 
@@ -110,6 +111,53 @@ void selectCandidate(int index) {
             list->candidate(index).select(ic);
         } catch (const std::invalid_argument &e) {
             FCITX_ERROR() << "select candidate index out of range";
+        }
+    });
+}
+
+void askCandidateAction(int index) {
+    with_fcitx([index] {
+        auto ic = instance->mostRecentInputContext();
+        const auto &list = ic->inputPanel().candidateList();
+        if (!list)
+            return;
+        auto *actionableList = list->toActionable();
+        if (!actionableList) {
+            return;
+        }
+        try {
+            auto &candidate = list->candidate(index);
+            if (actionableList->hasAction(candidate)) {
+                json actions = json::array();
+                for (const auto &action : actionableList->candidateActions(candidate)) {
+                    actions.push_back({{"id", action.id()}, {"text", action.text()}});
+                }
+                notify_main_async(
+                    json{{"type", "CANDIDATE_ACTIONS"}, {"data", {{"index", index}, {"actions", actions}}}}.dump());
+            }
+        } catch (const std::invalid_argument &e) {
+            FCITX_ERROR() << "action candidate index out of range";
+        }
+    });
+}
+
+void activateCandidateAction(int index, int id) {
+    with_fcitx([=] {
+        auto ic = instance->mostRecentInputContext();
+        const auto &list = ic->inputPanel().candidateList();
+        if (!list)
+            return;
+        auto *actionableList = list->toActionable();
+        if (!actionableList) {
+            return;
+        }
+        try {
+            auto &candidate = list->candidate(index);
+            if (actionableList->hasAction(candidate)) {
+                actionableList->triggerAction(candidate, id);
+            }
+        } catch (const std::invalid_argument &e) {
+            FCITX_ERROR() << "action candidate index out of range";
         }
     });
 }

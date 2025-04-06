@@ -54,10 +54,25 @@ API(selectCandidate) {
     return {};
 }
 
-API(activateStatusAreaAction) {
+API(askCandidateActions) {
     GET_ARGS(1)
     GET_I32(index, 0)
-    fcitx::activateStatusAreaAction(index);
+    fcitx::askCandidateAction(index);
+    return {};
+}
+
+API(activateCandidateAction) {
+    GET_ARGS(2)
+    GET_I32(index, 0)
+    GET_I32(id, 1)
+    fcitx::activateCandidateAction(index, id);
+    return {};
+}
+
+API(activateStatusAreaAction) {
+    GET_ARGS(1)
+    GET_I32(id, 0)
+    fcitx::activateStatusAreaAction(id);
     return {};
 }
 
@@ -94,6 +109,8 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"reset", nullptr, reset, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"processKey", nullptr, processKey, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"selectCandidate", nullptr, selectCandidate, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"askCandidateActions", nullptr, askCandidateActions, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"activateCandidateAction", nullptr, activateCandidateAction, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"activateStatusAreaAction", nullptr, activateStatusAreaAction, nullptr, nullptr, nullptr, napi_default,
          nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

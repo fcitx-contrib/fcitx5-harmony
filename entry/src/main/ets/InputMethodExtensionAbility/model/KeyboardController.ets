@@ -144,7 +144,7 @@ export class KeyboardController {
   }
 
   private updatePreviewText(text: string) {
-    let start = this.preedit ? this.preeditIndex : this.textInputClient!.getTextIndexAtCursorSync()
+    let start = this.preeditIndex
     let end = start + this.preedit.length
     if (this.preedit || text) {
       try {
@@ -161,7 +161,6 @@ export class KeyboardController {
       }
     }
     this.preedit = text
-    this.preeditIndex = start
   }
 
   private processResult(res: InputContextState): boolean {
@@ -255,6 +254,10 @@ export class KeyboardController {
 
   public handleVirtualKeyboardEvent(event: VirtualKeyboardEvent): void | Promise<void> {
     switch (event.type) {
+      case 'ASK_CANDIDATE_ACTIONS':
+        return fcitx.askCandidateActions(event.data)
+      case 'CANDIDATE_ACTION':
+        return fcitx.activateCandidateAction(event.data.index, event.data.id);
       case 'COLLAPSE':
         return this.panel?.hide()
       case 'COMMIT':
@@ -357,6 +360,9 @@ export class KeyboardController {
       this.selectionEnd = newEnd
       // Because selectByMovementSync won't call this, doing below won't interrupt selection when start and end overlap.
       this.selecting = this.selectionStart !== this.selectionEnd
+      if (!this.preedit) {
+        this.preeditIndex = this.selectionStart
+      }
       this.sendEvent({ type: this.selecting? 'SELECT' : 'DESELECT' })
     })
   }
