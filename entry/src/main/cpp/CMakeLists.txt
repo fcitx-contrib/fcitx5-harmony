@@ -69,7 +69,6 @@ target_include_directories(entry PRIVATE src)
 target_link_libraries(entry PRIVATE fcitx)
 target_link_libraries(entry PUBLIC libace_napi.z.so)
 
-# XXX: This won't be bundled into HAP for the first run of hvigorw assembleHap.
 add_custom_command(TARGET entry
     POST_BUILD  COMMAND
     node "${PROJECT_SOURCE_DIR}/../../../../scripts/postbuild.mjs" "${PROJECT_SOURCE_DIR}/../resources/resfile" "${PROJECT_BINARY_DIR}"

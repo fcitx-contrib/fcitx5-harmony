@@ -20,7 +20,7 @@ export class KeyboardController {
   private textInputClient: inputMethodEngine.InputClient | undefined = undefined;
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
   private preedit = ''
-  private preeditIndex = 0
+  private preeditIndex = 0 // Bad initial value that must be reset on focus.
   private textWithPreedit = ''
   private selectionStart = 0
   private selectionEnd = 0
@@ -77,7 +77,7 @@ export class KeyboardController {
         }
         break
       case 'PREEDIT':
-        this.updatePreviewText(event.data.preedit)
+        this.updatePreviewText(event.data.preedit, event.data.cursorPos)
         break
       default:
         this.sendEvent(event)
@@ -143,7 +143,7 @@ export class KeyboardController {
     this.preeditIndex = this.textInputClient?.getTextIndexAtCursorSync() ?? -1
   }
 
-  private updatePreviewText(text: string) {
+  private updatePreviewText(text: string, cursorPos: number = 0) {
     let start = this.preeditIndex
     let end = start + this.preedit.length
     if (this.preedit || text) {
@@ -155,6 +155,9 @@ export class KeyboardController {
         start = this.textInputClient!.getTextIndexAtCursorSync()
         end = start
         this.textInputClient?.setPreviewTextSync(text, { start, end })
+      }
+      for (let i = 0; i < text.length - cursorPos; ++i) {
+        this.textInputClient?.moveCursorSync(inputMethodEngine.Direction.CURSOR_LEFT)
       }
       if (!text) {
         this.textInputClient?.finishTextPreviewSync()
@@ -170,7 +173,7 @@ export class KeyboardController {
     if (res.commit) {
       this.commitString(res.commit)
     }
-    this.updatePreviewText(res.preedit)
+    this.updatePreviewText(res.preedit, res.cursorPos)
     return true
   }
 
@@ -376,7 +379,11 @@ export class KeyboardController {
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
       this.setEnterKeyType()
       // If we do it synchronously, getTextIndexAtCursorSync highly likely crashes.
-      setTimeout((): void => resetStacks(this.getTextBefore() + this.getTextAfter()), 0)
+      setTimeout((): void => {
+        const before = this.getTextBefore()
+        this.preeditIndex = before.length
+        resetStacks(before + this.getTextAfter())
+      }, 0)
     })
     ability.on('inputStop', () => {
       // This is not paired with inputStart. Only called when switching to Celia.
