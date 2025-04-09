@@ -25,6 +25,7 @@ export class KeyboardController {
   private selectionStart = 0
   private selectionEnd = 0
   private selecting = false
+  private backspaceSelectionCount = 0
   private pendingEvents: SystemEvent[] = []
 
   constructor() {
@@ -226,6 +227,38 @@ export class KeyboardController {
     }
   }
 
+  private handleBackspaceSlide(direction: 'LEFT' | 'RIGHT' | 'RELEASE') {
+    if (this.preedit) {
+      if (direction === 'RELEASE') {
+        this.processResult(fcitx.reset())
+      }
+      return
+    }
+    if (!this.textInputClient) { // Only to make ArkTS happy.
+      return
+    }
+    switch (direction) {
+      case 'LEFT':
+        if (this.backspaceSelectionCount < this.selectionStart) {
+          ++this.backspaceSelectionCount
+          this.textInputClient.selectByMovementSync({ direction: inputMethodEngine.Direction.CURSOR_LEFT })
+        }
+        break
+      case 'RIGHT':
+        if (this.backspaceSelectionCount > 0) {
+          --this.backspaceSelectionCount
+          this.textInputClient.selectByMovementSync({ direction: inputMethodEngine.Direction.CURSOR_RIGHT })
+        }
+        break
+      case 'RELEASE':
+        if (this.backspaceSelectionCount) {
+          this.deleteForward(1)
+          this.backspaceSelectionCount = 0
+        }
+        break
+    }
+  }
+
   public handleKey(key: string, keyCode?: number): void {
     const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
     if (!this.processResult(res)) {
@@ -259,6 +292,8 @@ export class KeyboardController {
     switch (event.type) {
       case 'ASK_CANDIDATE_ACTIONS':
         return fcitx.askCandidateActions(event.data)
+      case 'BACKSPACE_SLIDE':
+        return this.handleBackspaceSlide(event.data)
       case 'CANDIDATE_ACTION':
         return fcitx.activateCandidateAction(event.data.index, event.data.id);
       case 'COLLAPSE':
@@ -339,8 +374,12 @@ export class KeyboardController {
 
   private registerListener(): void {
     this.registerInputListener();
-    keyboardDelegate.on('keyDown', (e) => { return this.physicalKeyEventHandler(e) })
-    keyboardDelegate.on('keyUp', (e) => { return this.physicalKeyEventHandler(e) })
+    keyboardDelegate.on('keyDown', (e) => {
+      return this.physicalKeyEventHandler(e)
+    })
+    keyboardDelegate.on('keyUp', (e) => {
+      return this.physicalKeyEventHandler(e)
+    })
     // This is not called on focus.
     keyboardDelegate.on('textChange', (text: string) => {
       this.textWithPreedit = text
@@ -366,7 +405,7 @@ export class KeyboardController {
       if (!this.preedit) {
         this.preeditIndex = this.selectionStart
       }
-      this.sendEvent({ type: this.selecting? 'SELECT' : 'DESELECT' })
+      this.sendEvent({ type: this.selecting ? 'SELECT' : 'DESELECT' })
     })
   }
 
