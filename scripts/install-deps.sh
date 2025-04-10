@@ -4,12 +4,17 @@ deps=(
   boost
   curl
   ecm
+  iso-codes
   json
-  lua
+  json-c
+  libexpat
   libintl
+  libxkbcommon
+  lua
   marisa
   opencc
   openssl
+  xkeyboard-config
   zstd
 )
 
