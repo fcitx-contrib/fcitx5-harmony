@@ -37,12 +37,18 @@ option(ENABLE_WAYLAND "" OFF)
 option(ENABLE_DBUS "" OFF)
 option(ENABLE_DOC "" OFF)
 option(ENABLE_SERVER "" OFF)
-option(ENABLE_KEYBOARD "" OFF)
 option(USE_SYSTEMD "" OFF)
 option(ENABLE_XDGAUTOSTART "" OFF)
 option(ENABLE_EMOJI "" OFF)
 option(ENABLE_LIBUUID "" OFF)
 option(BUILD_SPELL_DICT "" OFF)
+
+# Override iso-codes paths and xkb default rules file
+set(ISOCODES_ISO3166_JSON "${CMAKE_INSTALL_PREFIX}/share/iso-codes/json/iso_3166-1.json")
+set(ISOCODES_ISO639_JSON "${CMAKE_INSTALL_PREFIX}/share/iso-codes/json/iso_639-3.json")
+set(XKEYBOARDCONFIG_XKBBASE "${CMAKE_INSTALL_PREFIX}/share/X11/xkb")
+set(XKEYBOARDCONFIG_DATADIR "${CMAKE_INSTALL_PREFIX}/share")
+
 add_subdirectory(fcitx5)
 target_link_libraries(Fcitx5Utils PRIVATE c++experimental) # TODO: check if clang 16+ needs it.
 
@@ -70,6 +76,6 @@ target_link_libraries(entry PRIVATE fcitx)
 target_link_libraries(entry PUBLIC libace_napi.z.so)
 
 add_custom_command(TARGET entry
-    POST_BUILD  COMMAND
-    node "${PROJECT_SOURCE_DIR}/../../../../scripts/postbuild.mjs" "${PROJECT_SOURCE_DIR}/../resources/resfile" "${PROJECT_BINARY_DIR}"
+    POST_BUILD COMMAND
+    node "${PROJECT_SOURCE_DIR}/../../../../scripts/postbuild.mjs" "${PROJECT_SOURCE_DIR}/../resources/resfile" "${PROJECT_BINARY_DIR}" "${PREBUILT_USR}"
 )
