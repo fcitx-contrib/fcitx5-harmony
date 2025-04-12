@@ -19,6 +19,7 @@ export class KeyboardController {
   private port: webview.WebMessagePort | null = null
   private textInputClient: inputMethodEngine.InputClient | undefined = undefined;
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
+  private initialized = false
   private preedit = ''
   private preeditIndex = 0 // Bad initial value that must be reset on focus.
   private textWithPreedit = ''
@@ -372,6 +373,21 @@ export class KeyboardController {
     return this.processResult(res)
   }
 
+  private initHelper() {
+    if (this.initialized) {
+      return
+    }
+    try {
+      const before = this.getTextBefore()
+      this.preeditIndex = before.length
+      resetStacks(before + this.getTextAfter())
+      this.initialized = true
+    } catch (e) { // getTextIndexAtCursorSync can throw.
+      console.error(`${e}`)
+      setTimeout(() => { this.initHelper() }, 100)
+    }
+  }
+
   private registerListener(): void {
     this.registerInputListener();
     keyboardDelegate.on('keyDown', (e) => {
@@ -398,6 +414,7 @@ export class KeyboardController {
     // then double click 的 to select. The last step won't update selection to 1,2.
     keyboardDelegate.on('selectionChange', (oldBegin: number, oldEnd: number, newBegin: number, newEnd: number) => {
       console.debug(`selectionChange ${oldBegin} ${oldEnd} ${newBegin} ${newEnd}`)
+      this.initHelper()
       this.selectionStart = newBegin
       this.selectionEnd = newEnd
       // Because selectByMovementSync won't call this, doing below won't interrupt selection when start and end overlap.
@@ -412,17 +429,12 @@ export class KeyboardController {
   private registerInputListener(): void {
     ability.on('inputStart', (kbController, textInputClient) => {
       console.debug('inputStart')
+      this.initialized = false
       this.textInputClient = textInputClient;
       this.keyboardController = kbController;
       this.attribute = textInputClient.getEditorAttributeSync()
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
       this.setEnterKeyType()
-      // If we do it synchronously, getTextIndexAtCursorSync highly likely crashes.
-      setTimeout((): void => {
-        const before = this.getTextBefore()
-        this.preeditIndex = before.length
-        resetStacks(before + this.getTextAfter())
-      }, 0)
     })
     ability.on('inputStop', () => {
       // This is not paired with inputStart. Only called when switching to Celia.

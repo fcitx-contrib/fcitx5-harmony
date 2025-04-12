@@ -24,7 +24,7 @@ type TextOperation = InsertOperation | DeleteOperation | ReplaceOperation
 
 const undoes: TextOperation[] = []
 const redoes: TextOperation[] = []
-let currentText: string
+let currentText = ''
 let isUndoRedo = false
 const STACK_LIMIT = 1024
 const MERGE_TIMEOUT = 5000
