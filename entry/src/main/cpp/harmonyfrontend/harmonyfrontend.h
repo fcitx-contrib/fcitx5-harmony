@@ -31,6 +31,7 @@ private:
     Instance *instance_;
     FocusGroup focusGroup_;
     HarmonyInputContext *ic_;
+    std::unique_ptr<HandlerTableEntry<EventHandler>> handler_;
 };
 
 class HarmonyFrontendFactory : public AddonFactory {

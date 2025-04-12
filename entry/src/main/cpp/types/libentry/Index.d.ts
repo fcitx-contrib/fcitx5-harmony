@@ -15,5 +15,5 @@ export const toggle: () => void
 export const selectCandidate: (index: number) => void
 export const askCandidateActions: (index: number) => void
 export const activateCandidateAction: (index: number, id: number) => void
-export const updateStatusArea: () => void
 export const activateStatusAreaAction: (id: number) => void
+export const setCurrentInputMethod: (inputMethod: string) => void
