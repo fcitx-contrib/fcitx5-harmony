@@ -38,6 +38,7 @@ const jsCodeMap: Record<string, KeyCode> = {
   'KeyZ': KeyCode.KEYCODE_Z,
   'Period': KeyCode.KEYCODE_PERIOD,
   'Semicolon': KeyCode.KEYCODE_SEMICOLON,
+  'Space': KeyCode.KEYCODE_SPACE,
 }
 
 export function convertCode(jsCode: string): KeyCode | undefined {

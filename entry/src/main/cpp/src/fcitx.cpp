@@ -13,6 +13,7 @@
 #include "keycode.h"
 #include "util.h"
 #include "../harmonyfrontend/harmonyfrontend.h"
+#include "../webkeyboard/webkeyboard.h"
 #include "inputmethod.h"
 
 #ifdef __x86_64__
@@ -37,6 +38,7 @@ namespace fcitx {
 std::unique_ptr<Instance> instance;
 std::unique_ptr<fcitx::EventDispatcher> dispatcher;
 HarmonyFrontend *frontend;
+WebKeyboard *ui;
 
 static native_streambuf log_streambuf;
 static std::ostream stream(&log_streambuf);
@@ -80,7 +82,8 @@ void init(const std::string &bundle, const std::string &resfile) {
     dispatcher->attach(&instance->eventLoop());
     fcitx_thread = std::thread([] { instance->eventLoop().exec(); });
     frontend = dynamic_cast<HarmonyFrontend *>(addonMgr.addon("harmonyfrontend"));
-    setInputMethods({"pinyin"}); // XXX: for test only.
+    ui = dynamic_cast<WebKeyboard *>(addonMgr.addon("webkeyboard"));
+    setInputMethods({"keyboard-th", "pinyin"}); // XXX: for test only.
 }
 
 void focusIn(bool clientPreedit) {
@@ -164,6 +167,14 @@ void activateCandidateAction(int index, int id) {
     });
 }
 
+void updateStatusArea() {
+    with_fcitx([] {
+        if (auto *ic = instance->mostRecentInputContext()) {
+            ui->updateStatusArea(ic);
+        }
+    });
+}
+
 void activateStatusAreaAction(int id) {
     with_fcitx([id] {
         if (auto *ic = instance->mostRecentInputContext()) {
@@ -171,5 +182,9 @@ void activateStatusAreaAction(int id) {
             action->activate(ic);
         }
     });
+}
+
+void toggle() {
+    with_fcitx([] { instance->toggle(); });
 }
 } // namespace fcitx

@@ -33,6 +33,11 @@ API(reset) {
     return ret;
 }
 
+API(toggle) {
+    fcitx::toggle();
+    return {};
+}
+
 API(processKey) {
     GET_ARGS(3)
     GET_U32(unicode, 0)
@@ -66,6 +71,11 @@ API(activateCandidateAction) {
     GET_I32(index, 0)
     GET_I32(id, 1)
     fcitx::activateCandidateAction(index, id);
+    return {};
+}
+
+API(updateStatusArea) {
+    fcitx::updateStatusArea();
     return {};
 }
 
@@ -107,10 +117,12 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"focusIn", nullptr, focusIn, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"focusOut", nullptr, focusOut, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"reset", nullptr, reset, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"toggle", nullptr, toggle, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"processKey", nullptr, processKey, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"selectCandidate", nullptr, selectCandidate, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"askCandidateActions", nullptr, askCandidateActions, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"activateCandidateAction", nullptr, activateCandidateAction, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"updateStatusArea", nullptr, updateStatusArea, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"activateStatusAreaAction", nullptr, activateStatusAreaAction, nullptr, nullptr, nullptr, napi_default,
          nullptr}};
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
