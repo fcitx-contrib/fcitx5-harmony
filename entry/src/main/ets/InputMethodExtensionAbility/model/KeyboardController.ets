@@ -327,6 +327,8 @@ export class KeyboardController {
         break
       case 'SELECT_CANDIDATE':
         return fcitx.selectCandidate(event.data)
+      case 'SET_INPUT_METHOD':
+        return fcitx.setCurrentInputMethod(event.data)
       case 'STATUS_AREA_ACTION':
         return fcitx.activateStatusAreaAction(event.data)
       case 'UNDO':
@@ -436,7 +438,6 @@ export class KeyboardController {
       this.keyboardController = kbController;
       this.attribute = textInputClient.getEditorAttributeSync()
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
-      fcitx.updateStatusArea()
       this.setEnterKeyType()
     })
     ability.on('inputStop', () => {

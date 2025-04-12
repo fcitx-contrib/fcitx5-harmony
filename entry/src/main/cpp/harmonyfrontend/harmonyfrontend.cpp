@@ -1,4 +1,5 @@
 #include "harmonyfrontend.h"
+#include "../src/inputmethod.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -6,6 +7,14 @@ using json = nlohmann::json;
 namespace fcitx {
 HarmonyFrontend::HarmonyFrontend(Instance *instance)
     : instance_(instance), focusGroup_("harmony", instance->inputContextManager()) {
+    handler_ = instance_->watchEvent(
+        EventType::InputContextInputMethodActivated, EventWatcherPhase::Default, [this](Event &event) {
+            notify_main_async(json{
+                {"type", "INPUT_METHODS"},
+                {"data",
+                 {{"currentInputMethod", instance_->currentInputMethod()}, {"inputMethods", getInputMethodsJson()}}}}
+                                  .dump());
+        });
     createInputContext();
 }
 

@@ -4,7 +4,6 @@
 #include <fcitx/statusarea.h>
 
 #include "../src/fcitx.h"
-#include "../src/inputmethod.h"
 #include "webkeyboard.h"
 #include <sstream>
 
@@ -91,12 +90,7 @@ void WebKeyboard::updateStatusArea(InputContext *ic) {
         }
         actions.emplace_back(actionToJson(action, ic));
     }
-    notify_main_async(json{{"type", "STATUS_AREA"},
-                           {"data",
-                            {{"actions", actions},
-                             {"currentInputMethod", instance_->currentInputMethod()},
-                             {"inputMethods", getInputMethodsJson()}}}}
-                          .dump());
+    notify_main_async(json{{"type", "STATUS_AREA"}, {"data", actions}}.dump());
 }
 } // namespace fcitx
 
