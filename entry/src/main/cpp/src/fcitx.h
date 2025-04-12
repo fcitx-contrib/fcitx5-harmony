@@ -23,5 +23,7 @@ InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
 void selectCandidate(int index);
 void askCandidateAction(int index);
 void activateCandidateAction(int index, int id);
+void updateStatusArea();
 void activateStatusAreaAction(int id);
+void toggle();
 } // namespace fcitx

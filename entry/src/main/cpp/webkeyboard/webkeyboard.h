@@ -6,9 +6,9 @@
 #include <fcitx/instance.h>
 #include <nlohmann/json.hpp>
 
-#include "utility.h"
-
 using json = nlohmann::json;
+
+std::string escape_html(const std::string &content);
 
 namespace fcitx {
 
@@ -41,12 +41,12 @@ public:
     bool isVirtualKeyboardVisible() const override { return true; }
     void showVirtualKeyboard() override;
     void hideVirtualKeyboard() override {}
+    void updateStatusArea(InputContext *ic);
 
 private:
     Instance *instance_;
 
     void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted);
-    void updateStatusArea(InputContext *ic);
 };
 
 class WebKeyboardFactory : public AddonFactory {

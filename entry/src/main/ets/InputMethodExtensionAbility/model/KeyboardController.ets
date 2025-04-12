@@ -310,6 +310,8 @@ export class KeyboardController {
         this.selecting = false
         this.setCursor(this.textInputClient?.getTextIndexAtCursorSync() ?? 0)
         break
+      case 'GLOBE':
+        return fcitx.toggle()
       case 'KEY_DOWN':
         return this.handleKey(event.data.key, convertCode(event.data.code))
       case 'PASTE':
@@ -434,6 +436,7 @@ export class KeyboardController {
       this.keyboardController = kbController;
       this.attribute = textInputClient.getEditorAttributeSync()
       fcitx.focusIn(this.attribute.isTextPreviewSupported)
+      fcitx.updateStatusArea()
       this.setEnterKeyType()
     })
     ability.on('inputStop', () => {
