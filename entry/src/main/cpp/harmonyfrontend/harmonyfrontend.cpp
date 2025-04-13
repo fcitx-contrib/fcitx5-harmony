@@ -88,7 +88,7 @@ void HarmonyInputContext::commitStringAsync() {
 
 void HarmonyInputContext::updatePreeditAsync() {
     auto state = state_;
-    auto j = json{{"type", "PREEDIT"}, {"data", {{"preedit", state.preedit}, {"cursorPos", state.cursorPos}}}};
+    auto j = json{{"type", "CLIENT_PREEDIT"}, {"data", {{"preedit", state.preedit}, {"cursorPos", state.cursorPos}}}};
     notify_main_async(j.dump());
 }
 
