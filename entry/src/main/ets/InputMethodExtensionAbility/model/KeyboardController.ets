@@ -318,6 +318,8 @@ export class KeyboardController {
         return this.textInputClient?.sendExtendAction(inputMethodEngine.ExtendAction.PASTE)
       case 'REDO':
         return redo(this.textInputClient!)
+      case 'SCROLL':
+        return fcitx.scroll(event.data.start, event.data.count)
       case 'SELECT':
         this.selecting = true
         break

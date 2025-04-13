@@ -17,3 +17,4 @@ export const askCandidateActions: (index: number) => void
 export const activateCandidateAction: (index: number, id: number) => void
 export const activateStatusAreaAction: (id: number) => void
 export const setCurrentInputMethod: (inputMethod: string) => void
+export const scroll: (start: number, count: number) => void

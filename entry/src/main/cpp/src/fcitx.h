@@ -26,4 +26,5 @@ void activateCandidateAction(int index, int id);
 void activateStatusAreaAction(int id);
 void toggle();
 void setCurrentInputMethod(const std::string &inputMethod);
+void scroll(int start, int count);
 } // namespace fcitx

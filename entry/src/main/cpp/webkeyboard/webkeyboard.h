@@ -13,8 +13,8 @@ std::string escape_html(const std::string &content);
 namespace fcitx {
 
 struct Candidate {
-    std::string label;
     std::string text;
+    std::string label;
     std::string comment;
 
     friend void to_json(json &j, const Candidate &c) {
@@ -42,11 +42,14 @@ public:
     void showVirtualKeyboard() override;
     void hideVirtualKeyboard() override {}
     void updateStatusArea(InputContext *ic);
+    void scroll(int start, int count);
 
 private:
     Instance *instance_;
 
-    void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted);
+    void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted, int scrollState,
+                            bool scrollStart, bool scrollEnd);
+    void expand();
 };
 
 class WebKeyboardFactory : public AddonFactory {
