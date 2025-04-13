@@ -78,7 +78,7 @@ export class KeyboardController {
           this.commitString(event.data)
         }
         break
-      case 'PREEDIT':
+      case 'CLIENT_PREEDIT':
         this.updatePreviewText(event.data.preedit, event.data.cursorPos)
         break
       default:

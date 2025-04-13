@@ -31,6 +31,9 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
         int highlighted = -1;
         std::vector<Candidate> candidates;
         const InputPanel &inputPanel = inputContext->inputPanel();
+        auto auxUp = instance_->outputFilter(inputContext, inputPanel.auxUp()).toString();
+        auto preedit = instance_->outputFilter(inputContext, inputPanel.preedit()).toString();
+        notify_main_async(json{{"type", "PREEDIT"}, {"data", {{"auxUp", auxUp}, {"preedit", preedit}}}}.dump());
         if (const auto &list = inputPanel.candidateList()) {
             int size = list->size();
             candidates.reserve(size);
@@ -42,7 +45,7 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
             }
             highlighted = list->cursorIndex();
         }
-        if (candidates.empty()) {
+        if (auxUp.empty() && preedit.empty() && candidates.empty()) {
             notify_main_async(R"JSON({"type":"CLEAR"})JSON");
         } else {
             setCandidatesAsync(candidates, highlighted);

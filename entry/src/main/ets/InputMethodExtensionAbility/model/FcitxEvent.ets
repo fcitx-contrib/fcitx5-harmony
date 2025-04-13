@@ -9,7 +9,7 @@ interface PreeditData {
 }
 
 interface PreeditEvent {
-  type: 'PREEDIT'
+  type: 'CLIENT_PREEDIT'
   data: PreeditData
 }
 
