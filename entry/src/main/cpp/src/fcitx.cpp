@@ -38,6 +38,7 @@ namespace fcitx {
 std::unique_ptr<Instance> instance;
 std::unique_ptr<fcitx::EventDispatcher> dispatcher;
 HarmonyFrontend *frontend;
+WebKeyboard *ui;
 
 static native_streambuf log_streambuf;
 static std::ostream stream(&log_streambuf);
@@ -81,6 +82,7 @@ void init(const std::string &bundle, const std::string &resfile) {
     dispatcher->attach(&instance->eventLoop());
     fcitx_thread = std::thread([] { instance->eventLoop().exec(); });
     frontend = dynamic_cast<HarmonyFrontend *>(addonMgr.addon("harmonyfrontend"));
+    ui = dynamic_cast<WebKeyboard *>(addonMgr.addon("webkeyboard"));
     setInputMethods({"keyboard-us", "keyboard-th", "pinyin"}); // XXX: for test only.
 }
 
@@ -109,6 +111,15 @@ void selectCandidate(int index) {
         const auto &list = ic->inputPanel().candidateList();
         if (!list)
             return;
+        const auto &bulk = list->toBulk();
+        if (bulk) {
+            try {
+                bulk->candidateFromAll(index).select(ic);
+            } catch (const std::invalid_argument &e) {
+                FCITX_ERROR() << "select candidate index out of range";
+            }
+            return;
+        }
         try {
             // Engine is responsible for updating UI
             list->candidate(index).select(ic);
@@ -116,6 +127,17 @@ void selectCandidate(int index) {
             FCITX_ERROR() << "select candidate index out of range";
         }
     });
+}
+
+static void answerCandidateAction(ActionableCandidateList *actionableList, const CandidateWord &candidate, int index) {
+    if (actionableList->hasAction(candidate)) {
+        json actions = json::array();
+        for (const auto &action : actionableList->candidateActions(candidate)) {
+            actions.push_back({{"id", action.id()}, {"text", action.text()}});
+        }
+        notify_main_async(
+            json{{"type", "CANDIDATE_ACTIONS"}, {"data", {{"index", index}, {"actions", actions}}}}.dump());
+    }
 }
 
 void askCandidateAction(int index) {
@@ -128,16 +150,19 @@ void askCandidateAction(int index) {
         if (!actionableList) {
             return;
         }
+        const auto &bulk = list->toBulk();
+        if (bulk) {
+            try {
+                auto &candidate = bulk->candidateFromAll(index);
+                answerCandidateAction(actionableList, candidate, index);
+            } catch (const std::invalid_argument &e) {
+                FCITX_ERROR() << "action candidate index out of range";
+            }
+            return;
+        }
         try {
             auto &candidate = list->candidate(index);
-            if (actionableList->hasAction(candidate)) {
-                json actions = json::array();
-                for (const auto &action : actionableList->candidateActions(candidate)) {
-                    actions.push_back({{"id", action.id()}, {"text", action.text()}});
-                }
-                notify_main_async(
-                    json{{"type", "CANDIDATE_ACTIONS"}, {"data", {{"index", index}, {"actions", actions}}}}.dump());
-            }
+            answerCandidateAction(actionableList, candidate, index);
         } catch (const std::invalid_argument &e) {
             FCITX_ERROR() << "action candidate index out of range";
         }
@@ -152,6 +177,18 @@ void activateCandidateAction(int index, int id) {
             return;
         auto *actionableList = list->toActionable();
         if (!actionableList) {
+            return;
+        }
+        const auto &bulk = list->toBulk();
+        if (bulk) {
+            try {
+                const auto &candidate = bulk->candidateFromAll(index);
+                if (actionableList->hasAction(candidate)) {
+                    actionableList->triggerAction(candidate, id);
+                }
+            } catch (const std::invalid_argument &e) {
+                FCITX_ERROR() << "action candidate index out of range";
+            }
             return;
         }
         try {
@@ -180,5 +217,9 @@ void toggle() {
 
 void setCurrentInputMethod(const std::string &inputMethod) {
     with_fcitx([&] { instance->setCurrentInputMethod(inputMethod); });
+}
+
+void scroll(int start, int count) {
+    with_fcitx([=] { ui->scroll(start, count); });
 }
 } // namespace fcitx

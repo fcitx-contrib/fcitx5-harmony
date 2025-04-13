@@ -88,6 +88,14 @@ API(setCurrentInputMethod) {
     return {};
 }
 
+API(scroll) {
+    GET_ARGS(2)
+    GET_I32(start, 0)
+    GET_I32(count, 1)
+    fcitx::scroll(start, count);
+    return {};
+}
+
 static void CallJs(napi_env env, napi_value jsCb, void *context, void *data) {
     if (env == nullptr) {
         return;
@@ -124,6 +132,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"selectCandidate", nullptr, selectCandidate, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"askCandidateActions", nullptr, askCandidateActions, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"activateCandidateAction", nullptr, activateCandidateAction, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"scroll", nullptr, scroll, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"setCurrentInputMethod", nullptr, setCurrentInputMethod, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"activateStatusAreaAction", nullptr, activateStatusAreaAction, nullptr, nullptr, nullptr, napi_default,
          nullptr}};
