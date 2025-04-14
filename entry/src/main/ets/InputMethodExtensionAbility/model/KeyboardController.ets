@@ -20,6 +20,10 @@ export class KeyboardController {
   private textInputClient: inputMethodEngine.InputClient | undefined = undefined;
   private keyboardController: inputMethodEngine.KeyboardController | undefined = undefined;
   private initialized = false
+  // Virtual keyboard states
+  private hasCandidates = false
+  private hasPreeditOrAux = false
+  // Textarea states
   private preedit = ''
   private preeditIndex = 0 // Bad initial value that must be reset on focus.
   private textWithPreedit = ''
@@ -80,6 +84,19 @@ export class KeyboardController {
         break
       case 'CLIENT_PREEDIT':
         this.updatePreviewText(event.data.preedit, event.data.cursorPos)
+        break
+      case 'CLEAR':
+        this.hasCandidates = false
+        this.hasPreeditOrAux = false
+        this.sendEvent(event)
+        break
+      case 'CANDIDATES':
+        this.hasCandidates = true
+        this.sendEvent(event)
+        break
+      case 'PREEDIT':
+        this.hasPreeditOrAux = event.data.auxUp !== '' || event.data.preedit !== ''
+        this.sendEvent(event)
         break
       default:
         this.sendEvent(event)
@@ -229,7 +246,7 @@ export class KeyboardController {
   }
 
   private handleBackspaceSlide(direction: 'LEFT' | 'RIGHT' | 'RELEASE') {
-    if (this.preedit) {
+    if (this.preedit || this.hasCandidates || this.hasPreeditOrAux) {
       if (direction === 'RELEASE') {
         this.processResult(fcitx.reset())
       }
@@ -366,6 +383,7 @@ export class KeyboardController {
       })
       this.panel.on('hide', () => {
         console.debug('hide')
+        this.processResult(fcitx.reset()) // Need it when dragging right edge to collapse keyboard.
         this.sendEvent({ type: 'HIDE' })
       })
       this.panel.resize(width, containerHeight)
