@@ -74,7 +74,8 @@ void WebKeyboard::setCandidatesAsync(const std::vector<Candidate> &candidates, i
     notify_main_async(j.dump());
 }
 
-void WebKeyboard::expand() { scroll(0, 20); }
+// Vertically 2 screens.
+void WebKeyboard::expand() { scroll(0, 60); }
 
 void WebKeyboard::scroll(int start, int count) {
     auto ic = instance_->mostRecentInputContext();
