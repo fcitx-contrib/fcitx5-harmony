@@ -33,7 +33,10 @@ void WebKeyboard::update(UserInterfaceComponent component, InputContext *inputCo
         const InputPanel &inputPanel = inputContext->inputPanel();
         auto auxUp = instance_->outputFilter(inputContext, inputPanel.auxUp()).toString();
         auto preedit = instance_->outputFilter(inputContext, inputPanel.preedit()).toString();
-        notify_main_async(json{{"type", "PREEDIT"}, {"data", {{"auxUp", auxUp}, {"preedit", preedit}}}}.dump());
+        notify_main_async(
+            json{{"type", "PREEDIT"},
+                 {"data", {{"auxUp", auxUp}, {"preedit", preedit}, {"caret", inputPanel.preedit().cursor()}}}}
+                .dump());
         if (const auto &list = inputPanel.candidateList()) {
             const auto &bulk = list->toBulk();
             if (bulk) {
