@@ -39,7 +39,7 @@ for addon in "${addons[@]}"; do
   file=$addon-any.tar.bz2
   [[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-plugins/releases/download/macos-latest/$file
   tar xf cache/$file -C $RES_EXTRACT_DIR lib || true
-  tar xf cache/$file -C $RES_EXTRACT_DIR share
+  tar xf cache/$file -C $RES_EXTRACT_DIR --exclude share/icons share # symlink extraction error on Windows
 done
 
 RAW_DIR=entry/src/main/resources/rawfile

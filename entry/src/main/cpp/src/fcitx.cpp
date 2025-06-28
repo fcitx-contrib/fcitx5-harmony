@@ -59,7 +59,7 @@ void setupEnv(const std::string &bundle, const std::string &resfile) {
     ::fs::path xdg_data_dirs = resfilePath / "usr" / "share";
     std::string fcitx_data_dirs = xdg_data_dirs / "fcitx5";
     std::string libime_model_dirs = resfilePath / "usr" / "lib" / "libime";
-    std::string xkb_config_root = xdg_data_dirs / "X11" / "xkb";
+    std::string xkb_config_root = xdg_data_dirs / "xkeyboard-config-2";
     setenv("XDG_DATA_DIRS", xdg_data_dirs.c_str(), 1);
     setenv("FCITX_DATA_DIRS", fcitx_data_dirs.c_str(), 1);
     setenv("LIBIME_MODEL_DIRS", libime_model_dirs.c_str(), 1);

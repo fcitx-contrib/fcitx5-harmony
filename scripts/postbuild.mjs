@@ -12,7 +12,7 @@ mkdirSync(isoJsonDir, { recursive: true })
 
 const commands = [
   ['cmake', '--install', buildDir, '--component', 'config'],
-  ['cp', '-r', `${prebuiltUsrDir}/share/X11`, destShareDir],
+  ['cp', '-r', `${prebuiltUsrDir}/share/xkeyboard-config-2`, destShareDir],
   ['cp', `${prebuiltUsrDir}/share/iso-codes/json/iso_3166-1.json`, isoJsonDir],
   ['cp', `${prebuiltUsrDir}/share/iso-codes/json/iso_639-3.json`, isoJsonDir],
 ]
