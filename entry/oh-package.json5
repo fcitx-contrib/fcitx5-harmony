@@ -7,6 +7,5 @@
   "license": "",
   "dependencies": {
     "libentry.so": "file:./src/main/cpp/types/libentry",
-    "@liushengyi/smartdb": "^4.0.1"
   }
 }

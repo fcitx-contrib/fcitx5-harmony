@@ -1,8 +1,7 @@
 import { Context } from '@kit.AbilityKit'
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit'
-import sql from '@liushengyi/smartdb'
 import { PasteboardDao } from './PasteboardDao'
-import { PasteboardDatabase } from './PasteboardDatabase'
+import { PasteboardDatabase, rdbStore } from './PasteboardDatabase'
 import { PasteboardEntry } from './PasteboardEntry'
 import { HashSet } from '@kit.ArkTS'
 import { StrUtil } from '../../../utils/StrUtil'
@@ -63,15 +62,18 @@ export class PasteboardController {
   }
 
   async get(id: number): Promise<PasteboardEntry> {
-    return await this.psbDao!.getById(id)
+    const entry = await this.psbDao!.getById(id)
+    return entry
   }
 
   async haveUnpinned(): Promise<boolean> {
-    return await this.psbDao!.haveUnpinned()
+    const result = await this.psbDao!.haveUnpinned()
+    return result
   }
 
-  async allEntries(): Promise<Array<PasteboardEntry>> {
-    return await this.psbDao!.allEntries()
+  async getEntries(offset: number, limit: number): Promise<Array<PasteboardEntry>> {
+    const entries = await this.psbDao!.getEntries(offset, limit)
+    return entries
   }
 
   async pin(id: number) {
@@ -124,7 +126,6 @@ export class PasteboardController {
     await this.updateItemCount()
   }
 
-  @sql.Transactional()
   private async insertEntry(entry: PasteboardEntry): Promise<PasteboardEntry> {
     const rowId = await this.psbDao!.insert(entry)
     if (!rowId) {
@@ -145,14 +146,20 @@ export class PasteboardController {
         return
       }
       try {
-        const existed = await pasteboardController.psbDao!.find(entry.text, entry.sensitive)
+        const existed = await this.psbDao!.find(entry.text, entry.sensitive)
         if (existed) {
           const copy = existed
           copy.timestamp = entry.timestamp
-          pasteboardController.updateLastEntry(copy)
-          await pasteboardController.psbDao!.updateTime(existed.id, entry.timestamp)
+          this.updateLastEntry(copy)
+          await this.psbDao!.updateTime(existed.id, entry.timestamp)
         } else {
-          const insertedEntry = await pasteboardController.insertEntry(entry)
+          let temp: PasteboardEntry | undefined = undefined
+          rdbStore?.createTransaction().then(async () => {
+            const rowId = await this.psbDao!.insert(entry)
+            // TODO: removeOutdated()
+            temp = await this.psbDao?.getByRowId(rowId)
+          })
+          const insertedEntry = temp ? temp : entry
           console.debug('get entry text: ' + insertedEntry.text)
           pasteboardController.updateLastEntry(insertedEntry)
           pasteboardController.updateItemCount()
