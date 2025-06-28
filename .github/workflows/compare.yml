@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Install bsdtar
         run: |
-          sudo apt install -y libarchive-tools
+          sudo apt update && sudo apt install -y libarchive-tools
           sudo ln -sf /usr/bin/bsdtar /usr/bin/tar
 
       - name: Download artifact
