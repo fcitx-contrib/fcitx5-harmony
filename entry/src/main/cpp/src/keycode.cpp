@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <linux/input-event-codes.h>
 #include "keycode.h"
 #include "ohkeycode.h"
@@ -273,8 +274,8 @@ uint16_t ohKeyCodeToFcitxKeyCode(int32_t keyCode) {
     return 0;
 }
 
-Key ohKeyToFcitxKey(uint32_t unicode, int32_t keyCode) {
+Key ohKeyToFcitxKey(uint32_t unicode, int32_t keyCode, uint32_t states) {
     auto keysym = unicode ? Key::keySymFromUnicode(unicode) : ohKeyCodeToFcitxKeySym(keyCode);
-    return Key{keysym, KeyStates{}, ohKeyCodeToFcitxKeyCode(keyCode)};
+    return Key{keysym, KeyStates{states}, ohKeyCodeToFcitxKeyCode(keyCode)};
 }
 } // namespace fcitx
