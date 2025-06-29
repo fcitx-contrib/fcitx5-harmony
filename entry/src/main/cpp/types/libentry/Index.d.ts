@@ -9,7 +9,7 @@ export interface InputContextState {
   cursorPos: number
   accepted: boolean
 }
-export const processKey: (unicode: number, keyCode: number, isRelease: boolean) => InputContextState
+export const processKey: (unicode: number, keyCode: number, states: number, isRelease: boolean) => InputContextState
 export const reset: () => InputContextState
 export const toggle: () => void
 export const selectCandidate: (index: number) => void

@@ -2,12 +2,13 @@ import { webview } from '@kit.ArkWeb';
 import type { InputMethodExtensionContext } from '@kit.IMEKit';
 import { inputMethodEngine } from '@kit.IMEKit';
 import { display } from '@kit.ArkUI';
-import { KeyCode } from '@kit.InputKit';
+import { Action, KeyAction, KeyCode, KeyEvent } from '@kit.InputKit';
 import { SystemEvent, VirtualKeyboardEvent } from '../../../fcitx5-keyboard-web/src/api';
 import fcitx, { InputContextState } from 'libentry.so';
 import { FcitxEvent } from './FcitxEvent';
 import { convertCode } from './keycode';
 import { onTextChange, redo, resetStacks, undo } from './TextOperation';
+import { KeyState, statesFromKeyEvent } from './KeyState';
 
 const ability: inputMethodEngine.InputMethodAbility = inputMethodEngine.getInputMethodAbility();
 const keyboardDelegate = inputMethodEngine.getKeyboardDelegate() // Physical keyboard
@@ -278,7 +279,7 @@ export class KeyboardController {
   }
 
   public handleKey(key: string, keyCode?: number): void {
-    const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, false)
+    const res = fcitx.processKey(key ? key.charCodeAt(0) : 0, keyCode ?? 0, KeyState.VIRTUAL, false)
     if (!this.processResult(res)) {
       switch (keyCode) { // Check code first as enter has to be handled differently, which has key \r.
         case KeyCode.KEYCODE_DEL:
@@ -391,10 +392,19 @@ export class KeyboardController {
     })
   }
 
-  private physicalKeyEventHandler(e: inputMethodEngine.KeyEvent): boolean {
-    const isRelease = e.keyAction === 3
-    const res = fcitx.processKey(0, e.keyCode, isRelease)
-    return this.processResult(res)
+  private physicalKeyEventHandler(e: KeyEvent): boolean {
+    const isRelease = e.action.valueOf() === Action.UP
+    const states = statesFromKeyEvent(e)
+    const charCode = e.unicodeChar
+    if (charCode > 0 && charCode !== '\t'.charCodeAt(0) && charCode !== '\n'.charCodeAt(0)) {
+      const res = fcitx.processKey(charCode, 0, states, isRelease)
+      return this.processResult(res)
+    }
+    if (e.key.code != KeyCode.KEYCODE_UNKNOWN) {
+      const res = fcitx.processKey(0, e.key.code, states, isRelease)
+      return this.processResult(res)
+    }
+    return false
   }
 
   private initHelper() {
@@ -414,10 +424,7 @@ export class KeyboardController {
 
   private registerListener(): void {
     this.registerInputListener();
-    keyboardDelegate.on('keyDown', (e) => {
-      return this.physicalKeyEventHandler(e)
-    })
-    keyboardDelegate.on('keyUp', (e) => {
+    keyboardDelegate.on('keyEvent', (e) => {
       return this.physicalKeyEventHandler(e)
     })
     // This is not called on focus.
@@ -471,8 +478,7 @@ export class KeyboardController {
     ability.off('inputStart');
     ability.off('inputStop', () => {
     });
-    keyboardDelegate.off('keyDown')
-    keyboardDelegate.off('keyUp')
+    keyboardDelegate.off('keyEvent')
     keyboardDelegate.off('textChange')
     this.panel?.off('show')
     this.panel?.off('hide')

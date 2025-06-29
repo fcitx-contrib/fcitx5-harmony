@@ -19,7 +19,7 @@ void init(const std::string &bundle, const std::string &resfile);
 void focusIn(bool clientPreedit);
 void focusOut();
 InputContextState reset();
-InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease);
+InputContextState processKey(uint32_t unicode, int32_t keyCode, uint32_t states, bool isRelease);
 void selectCandidate(int index);
 void askCandidateAction(int index);
 void activateCandidateAction(int index, int id);
