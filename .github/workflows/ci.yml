@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install dependencies
         run: |
@@ -25,8 +25,8 @@ jobs:
     env:
       NODE_VERSION: 18
       JAVA_VERSION: "17"
-      SDK_VERSION_MAJOR: 5.0.5
-      SDK_VERSION_MINOR: 310
+      SDK_VERSION_MAJOR: 5.1.0
+      SDK_VERSION_MINOR: 840
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           submodules: recursive
