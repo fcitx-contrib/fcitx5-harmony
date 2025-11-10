@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 29536ffc..5c98d97b 100644
+index ee908c87..4d0449f4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -228,7 +228,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
+@@ -231,7 +231,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
  include_directories(${CMAKE_CURRENT_BINARY_DIR})
  
  add_subdirectory(src)
@@ -11,10 +11,10 @@ index 29536ffc..5c98d97b 100644
  
  if (ENABLE_TESTING_ADDONS)
 diff --git a/src/lib/fcitx-config/CMakeLists.txt b/src/lib/fcitx-config/CMakeLists.txt
-index b2f37acd..0cf72d7c 100644
+index 60bfa14a..08f4a73e 100644
 --- a/src/lib/fcitx-config/CMakeLists.txt
 +++ b/src/lib/fcitx-config/CMakeLists.txt
-@@ -30,8 +30,7 @@ ecm_setup_version(PROJECT
+@@ -35,8 +35,7 @@ ecm_setup_version(PROJECT
  
  add_library(Fcitx5Config ${FCITX_CONFIG_SOURCES})
  set_target_properties(Fcitx5Config
@@ -25,10 +25,10 @@ index b2f37acd..0cf72d7c 100644
    )
  target_include_directories(Fcitx5Config PUBLIC
 diff --git a/src/lib/fcitx-utils/CMakeLists.txt b/src/lib/fcitx-utils/CMakeLists.txt
-index d2498649..b88dc5f9 100644
+index fe71b8f8..4e36f67c 100644
 --- a/src/lib/fcitx-utils/CMakeLists.txt
 +++ b/src/lib/fcitx-utils/CMakeLists.txt
-@@ -124,8 +124,7 @@ ecm_setup_version(PROJECT
+@@ -142,8 +142,7 @@ ecm_setup_version(PROJECT
  
  add_library(Fcitx5Utils ${FCITX_UTILS_SOURCES})
  set_target_properties(Fcitx5Utils
@@ -39,18 +39,61 @@ index d2498649..b88dc5f9 100644
    )
  target_include_directories(Fcitx5Utils PUBLIC
 diff --git a/src/lib/fcitx-utils/log.cpp b/src/lib/fcitx-utils/log.cpp
-index 6e9d18ab..00964e3a 100644
+index 56fb7f62..5b4dc244 100644
 --- a/src/lib/fcitx-utils/log.cpp
 +++ b/src/lib/fcitx-utils/log.cpp
-@@ -213,6 +213,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
+@@ -21,7 +21,6 @@
+ #include <utility>
+ #include <vector>
+ #include <format>
+-#include <syncstream>
+ #include "macros.h"
+ #include "stringutils.h"
+ 
+@@ -35,16 +34,17 @@ using LogRule = std::pair<std::string, LogLevel>;
+ 
+ struct LogConfig {
+     static std::ostream *defaultLogStream;
+-    static thread_local std::osyncstream localLogStream;
+     static bool showTimeDate;
+ };
+ 
+ std::ostream *LogConfig::defaultLogStream = &std::cerr;
++#if 0
+ thread_local std::osyncstream LogConfig::localLogStream = []() {
+     std::osyncstream out(*LogConfig::defaultLogStream);
+     out.rdbuf()->set_emit_on_sync(true);
+     return out;
+ }();
++#endif
+ bool LogConfig::showTimeDate = true;
+ 
+ bool validateLogLevel(std::underlying_type_t<LogLevel> l) {
+@@ -199,12 +199,15 @@ void Log::setLogStream(std::ostream &stream) {
+ }
+ 
+ std::ostream &Log::logStream() {
++#if 0
+     auto *buf = LogConfig::defaultLogStream->rdbuf();
+     if (LogConfig::localLogStream.get_wrapped() != buf) {
+         LogConfig::localLogStream = std::osyncstream(buf);
+         LogConfig::localLogStream.rdbuf()->set_emit_on_sync(true);
+     }
+     return LogConfig::localLogStream;
++#endif
++    return *LogConfig::defaultLogStream;
+ }
+ 
+ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
+@@ -230,6 +233,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
          break;
      }
  
 +#if 0
-     if (globalLogConfig.showTimeDate) {
+     if (LogConfig::showTimeDate) {
          try {
              auto now = std::chrono::time_point_cast<std::chrono::microseconds>(
-@@ -229,6 +230,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
+@@ -246,6 +250,7 @@ LogMessageBuilder::LogMessageBuilder(std::ostream &out, LogLevel l,
          } catch (...) {
          }
      }
@@ -58,11 +101,88 @@ index 6e9d18ab..00964e3a 100644
  
      out_ << filename << ":" << lineNumber << "] ";
  }
+diff --git a/src/lib/fcitx-utils/log.h b/src/lib/fcitx-utils/log.h
+index d1f3638f..112c3b6b 100644
+--- a/src/lib/fcitx-utils/log.h
++++ b/src/lib/fcitx-utils/log.h
+@@ -32,7 +32,6 @@
+ #include <fcitx-utils/metastring.h>
+ #include <fcitx-utils/misc.h>
+ #include <fcitx-utils/tuplehelpers.h>
+-#include <source_location> // IWYU pragma: keep
+ #include <span>
+ 
+ namespace fcitx {
+@@ -302,16 +301,18 @@ private:
+ 
+ } // namespace fcitx
+ 
++#define FCITX_LOG_FILENAME_WRAP                                                \
++    fcitx::MetaStringBasenameType<fcitxMakeMetaString(__FILE__)>::data()
++
+ // Use meta string for file name to avoid having full path in binary.
+ #define FCITX_LOGC_IF(CATEGORY, LEVEL, CONDITION)                              \
+     for (bool fcitxLogEnabled =                                                \
+              (CONDITION) && CATEGORY().fatalWrapper(::fcitx::LogLevel::LEVEL); \
+          fcitxLogEnabled;                                                      \
+          fcitxLogEnabled = CATEGORY().fatalWrapper2(::fcitx::LogLevel::LEVEL)) \
+-    ::fcitx::LogMessageBuilderWrapper<                                         \
+-        fcitx::MetaStringBasenameType<fcitxMakeMetaString(                     \
+-            std::source_location::current().file_name())>,                     \
+-        std::source_location::current().line()>(::fcitx::LogLevel::LEVEL)      \
++    ::fcitx::LogMessageBuilder(::fcitx::Log::logStream(),                      \
++                               ::fcitx::LogLevel::LEVEL,                       \
++                               FCITX_LOG_FILENAME_WRAP, __LINE__)              \
+         .self()
+ 
+ #define FCITX_LOGC(CATEGORY, LEVEL)                                            \
+@@ -319,10 +320,9 @@ private:
+              CATEGORY().fatalWrapper(::fcitx::LogLevel::LEVEL);                \
+          fcitxLogEnabled;                                                      \
+          fcitxLogEnabled = CATEGORY().fatalWrapper2(::fcitx::LogLevel::LEVEL)) \
+-    ::fcitx::LogMessageBuilderWrapper<                                         \
+-        fcitx::MetaStringBasenameType<fcitxMakeMetaString(                     \
+-            std::source_location::current().file_name())>,                     \
+-        std::source_location::current().line()>(::fcitx::LogLevel::LEVEL)      \
++    ::fcitx::LogMessageBuilder(::fcitx::Log::logStream(),                      \
++                               ::fcitx::LogLevel::LEVEL,                       \
++                               FCITX_LOG_FILENAME_WRAP, __LINE__)              \
+         .self()
+ 
+ #define FCITX_LOG(LEVEL) FCITX_LOGC(::fcitx::Log::defaultCategory, LEVEL)
+diff --git a/src/lib/fcitx-utils/standardpaths_p_unix.cpp b/src/lib/fcitx-utils/standardpaths_p_unix.cpp
+index 7bee8aba..8d593e05 100644
+--- a/src/lib/fcitx-utils/standardpaths_p_unix.cpp
++++ b/src/lib/fcitx-utils/standardpaths_p_unix.cpp
+@@ -103,12 +103,12 @@ std::vector<std::filesystem::path> defaultPaths(
+         }
+     }
+ 
+-    std::unordered_set<std::filesystem::path> seen;
++    std::unordered_set<std::string> seen;
+     std::erase_if(dirs, [&seen](const auto &dir) {
+-        if (seen.contains(dir)) {
++        if (seen.find(dir.string()) != seen.end()) {
+             return true;
+         }
+-        seen.insert(dir);
++        seen.insert(dir.string());
+         return false;
+     });
+ 
 diff --git a/src/lib/fcitx/CMakeLists.txt b/src/lib/fcitx/CMakeLists.txt
-index 56fe5190..f154b8d3 100644
+index 0cf004fe..c742e0bf 100644
 --- a/src/lib/fcitx/CMakeLists.txt
 +++ b/src/lib/fcitx/CMakeLists.txt
-@@ -67,8 +67,7 @@ ecm_setup_version(PROJECT
+@@ -24,7 +24,6 @@ set(FCITX_CORE_SOURCES
+     inputpanel.cpp
+     candidatelist.cpp
+     candidateaction.cpp
+-    icontheme.cpp
+     inputmethodengine.cpp
+     )
+ 
+@@ -67,8 +66,7 @@ ecm_setup_version(PROJECT
  
  add_library(Fcitx5Core ${FCITX_CORE_SOURCES})
  set_target_properties(Fcitx5Core
@@ -71,4 +191,4 @@ index 56fe5190..f154b8d3 100644
 +  PROPERTIES
    EXPORT_NAME Core
    )
- target_include_directories(Fcitx5Core PUBLIC
+ 
