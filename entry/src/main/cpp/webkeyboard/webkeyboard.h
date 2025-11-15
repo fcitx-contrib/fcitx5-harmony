@@ -48,7 +48,7 @@ private:
     Instance *instance_;
 
     void setCandidatesAsync(const std::vector<Candidate> &candidates, int highlighted, int scrollState,
-                            bool scrollStart, bool scrollEnd);
+                            bool scrollStart, bool scrollEnd, bool hasClientPreedit);
     void expand();
 };
 

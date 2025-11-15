@@ -20,6 +20,7 @@ set(ENV{PKG_CONFIG_SYSROOT_DIR} "${PREBUILT_ROOT}")
 set(ENV{PKG_CONFIG_PATH} "${PREBUILT_USR}/lib/pkgconfig")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+set(Fcitx5Utils_DIR "${PROJECT_SOURCE_DIR}/cmake")
 
 find_library(UV NAMES uv)
 add_library(ohos_uv SHARED IMPORTED)
