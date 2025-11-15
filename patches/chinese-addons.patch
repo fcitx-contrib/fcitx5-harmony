@@ -1,0 +1,29 @@
+diff --git a/im/pinyin/pinyin.cpp b/im/pinyin/pinyin.cpp
+index bc19a12..853196c 100644
+--- a/im/pinyin/pinyin.cpp
++++ b/im/pinyin/pinyin.cpp
+@@ -894,13 +894,13 @@ void PinyinEngine::loadExtraDict() {
+     auto files =
+         standardPath.locate(StandardPathsType::PkgData, "pinyin/dictionaries",
+                             pathfilter::extension(".dict"));
+-    std::unordered_set<std::filesystem::path> disableFilesSet;
++    std::unordered_set<std::string> disableFilesSet;
+     for (const auto &item :
+          standardPath.locate(StandardPathsType::PkgData, "pinyin/dictionaries",
+                              pathfilter::extension(".disable")) |
+              std::views::transform(
+                  [](const auto &item) { return item.first.stem(); })) {
+-        disableFilesSet.insert(item);
++        disableFilesSet.insert(item.string());
+     }
+     FCITX_ASSERT(ime_->dict()->dictSize() >=
+                  libime::TrieDictionary::UserDict + NumBuiltInDict + 1)
+@@ -909,7 +909,7 @@ void PinyinEngine::loadExtraDict() {
+     ime_->dict()->removeFrom(libime::TrieDictionary::UserDict + NumBuiltInDict +
+                              1);
+     for (auto &file : files) {
+-        if (disableFilesSet.contains(file.first)) {
++        if (disableFilesSet.find(file.first.string()) != disableFilesSet.end()) {
+             PINYIN_DEBUG() << "Dictionary: " << file.first << " is disabled.";
+             continue;
+         }

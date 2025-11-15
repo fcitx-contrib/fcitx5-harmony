@@ -79,6 +79,7 @@ jobs:
       - name: Build HAP
         run: |
           git apply --directory=entry/src/main/cpp/fcitx5 patches/fcitx5.patch
+          git apply --directory=entry/src/main/cpp/fcitx5-chinese-addons patches/chinese-addons.patch
           git apply --directory=entry/src/main/cpp/libime patches/libime.patch
           # Install dependencies
           ohpm install --all
