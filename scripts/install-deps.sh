@@ -6,7 +6,6 @@ deps=(
   ecm
   iso-codes
   json
-  json-c
   libexpat
   libintl
   libxkbcommon
