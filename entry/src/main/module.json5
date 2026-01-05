@@ -21,6 +21,14 @@
           "abilities": ["InputMethodExtensionAbility"],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.READ_PASTEBOARD",
+        "reason": "$string:READ_PASTEBOARD_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility", "InputMethodExtensionAbility"],
+          "when": "inuse"
+        }
       }
     ],
     "abilities": [
