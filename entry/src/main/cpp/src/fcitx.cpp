@@ -1,4 +1,5 @@
 #include "fcitx.h"
+#include <cstdint>
 #include <fcitx-utils/event.h>
 #include <fcitx-utils/eventdispatcher.h>
 #include <fcitx-utils/standardpath.h>
@@ -98,9 +99,9 @@ InputContextState reset() {
     return with_fcitx([] { return frontend->reset(); });
 }
 
-InputContextState processKey(uint32_t unicode, int32_t keyCode, bool isRelease) {
-    return with_fcitx([unicode, keyCode, isRelease] {
-        auto key = ohKeyToFcitxKey(unicode, keyCode);
+InputContextState processKey(uint32_t unicode, int32_t keyCode, uint32_t states, bool isRelease) {
+    return with_fcitx([unicode, keyCode, states, isRelease] {
+        auto key = ohKeyToFcitxKey(unicode, keyCode, states);
         return frontend->keyEvent(key, isRelease);
     });
 }
